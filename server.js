@@ -9,6 +9,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use('/api/auth', authRouter);
+
 connectdb();
 app.listen(process.env.port, function () {
     console.log("Started application on port %d", process.env.port)

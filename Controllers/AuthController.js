@@ -18,6 +18,7 @@ const checkCINAdminProf = async (req, res) => {
         res.status(500).json({ message: 'Error checking cin' });
     }
 }
+
 const checkPhoneAdminProf = async (req, res) => {
     try {
         const existingAdminPhone = await Admin.findOne({ phoneNumber: req.params.phoneNumber });
@@ -36,7 +37,30 @@ const checkUsername = async (req, res) => {
     try {
         const existingUserUsername = await User.findOne({ username: req.params.username });
         if (existingUserUsername) {
-            return res.json({ exists: true });
+            return res.json({
+                exists: true,
+                name: existingUserUsername.name,
+                lastname: existingUserUsername.lastname,
+                email: existingUserUsername.email,
+                username: existingUserUsername.username,
+                password: existingUserUsername.password,
+                dateOfBirth: existingUserUsername.dateOfBirth,
+                profilePicture: existingUserUsername.profilePicture,
+                isEmailVerified: existingUserUsername.isEmailVerified,
+                role: existingUserUsername.role,
+
+                phoneNumber: existingUserUsername.phoneNumber,
+                cinNumber: existingUserUsername.cinNumber,
+
+                parentCinNumber: existingUserUsername.parentCinNumber,
+                parentPhoneNumber: existingUserUsername.parentPhoneNumber,
+                instrument: existingUserUsername.instrument,
+                otherInstruments: existingUserUsername.otherInstruments,
+                fatherOccupation: existingUserUsername.fatherOccupation,
+                motherOccupation: existingUserUsername.motherOccupation,
+                isSubscribed: existingUserUsername.isSubscribed,
+                schoolGrade: existingUserUsername.schoolGrade,
+            });
         }
         res.json({ exists: false });
     } catch (error) {
@@ -49,7 +73,30 @@ const checkEmail = async (req, res) => {
     try {
         const existingUserEmail = await User.findOne({ email: req.params.email });
         if (existingUserEmail) {
-            return res.json({ exists: true });
+            return res.json({
+                exists: true,
+                name: existingUserEmail.name,
+                lastname: existingUserEmail.lastname,
+                email: existingUserEmail.email,
+                username: existingUserEmail.username,
+                password: existingUserEmail.password,
+                dateOfBirth: existingUserEmail.dateOfBirth,
+                profilePicture: existingUserEmail.profilePicture,
+                isEmailVerified: existingUserEmail.isEmailVerified,
+                role: existingUserEmail.role,
+
+                phoneNumber: existingUserEmail.phoneNumber,
+                cinNumber: existingUserEmail.cinNumber,
+
+                parentCinNumber: existingUserEmail.parentCinNumber,
+                parentPhoneNumber: existingUserEmail.parentPhoneNumber,
+                instrument: existingUserEmail.instrument,
+                otherInstruments: existingUserEmail.otherInstruments,
+                fatherOccupation: existingUserEmail.fatherOccupation,
+                motherOccupation: existingUserEmail.motherOccupation,
+                isSubscribed: existingUserEmail.isSubscribed,
+                schoolGrade: existingUserEmail.schoolGrade,
+            });
         }
         res.json({ exists: false });
     } catch (error) {
@@ -92,7 +139,7 @@ const register = async (req, res) => {
             role: 'client',
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({ message: 'Client registered successfully', token });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -148,8 +195,8 @@ const registerClient = async (req, res) => {
             schoolGrade: schoolGrade ? schoolGrade : "",
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(201).json({ message: 'Client registered successfully', token });
+        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.status(201).json({ message: 'Client registered successfully', token, username: newClient.username });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering Client' });
@@ -160,7 +207,7 @@ const registerAdmin = async (req, res) => {
     try {
         const { name, lastname, email, password, username, cinNumber, phoneNumber, profilePicture, dateOfBirth } = req.body;
 
-        if (!name || !lastname || !email || !password || !username || !cinNumber || !phoneNumber || !dateOfBirth) {
+        if (!name || !lastname || !email || !password || !username || !cinNumber || !phoneNumber) {
             return res.status(400).json({ message: 'All fields are required.' });
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -200,8 +247,8 @@ const registerAdmin = async (req, res) => {
             email,
             password: hashedPassword,
             username,
-            dateOfBirth,
-            profilePicture,
+            dateOfBirth: dateOfBirth ? dateOfBirth : "",
+            profilePicture: profilePicture ? profilePicture : "",
             isEmailVerified: false,
             role: 'admin',
 
@@ -210,8 +257,8 @@ const registerAdmin = async (req, res) => {
             phoneNumber,
         });
         await newAdmin.save();
-        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(201).json({ message: 'Admin registered successfully', token });
+        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.status(201).json({ message: 'Admin registered successfully', token, username: newAdmin.username });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering admin' });
@@ -222,7 +269,7 @@ const registerProf = async (req, res) => {
     try {
         const { name, lastname, email, password, username, cinNumber, phoneNumber, profilePicture, dateOfBirth } = req.body;
 
-        if (!name || !lastname || !email || !password || !username || !cinNumber || !phoneNumber || !dateOfBirth) {
+        if (!name || !lastname || !email || !password || !username || !cinNumber || !phoneNumber) {
             return res.status(400).json({ message: 'All fields are required.' });
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -262,8 +309,8 @@ const registerProf = async (req, res) => {
             email,
             password: hashedPassword,
             username,
-            dateOfBirth,
-            profilePicture,
+            dateOfBirth: dateOfBirth ? dateOfBirth : "",
+            profilePicture: profilePicture ? profilePicture : "",
             isEmailVerified: false,
             role: 'prof',
 
@@ -272,8 +319,10 @@ const registerProf = async (req, res) => {
             phoneNumber,
         });
         await newProf.save();
-        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(201).json({ message: 'Prof registered successfully', token });
+        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+
+        res.status(201).json({ message: 'Prof registered successfully', token, username: newProf.username });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering prof' });
@@ -296,8 +345,8 @@ const loginWithEmail = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: 'Login successful', token });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.status(200).json({ message: 'Login successful', token, username: user.username });
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -320,8 +369,8 @@ const loginWithUsername = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: 'Login successful', token });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.status(200).json({ message: 'Login successful', token, username: user.username });
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
