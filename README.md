@@ -1,4 +1,7 @@
-![Elkindy logo](https://github.com/MontassarMchabet/ElKindy_Project/blob/main/logokindy.png?raw=true)
+<div align="center">
+  <img src="https://github.com/MontassarMchabet/ElKindy_Project/blob/main/logokindy.png?raw=true" alt="Elkindy logo">
+</div>
+
 
 # El Kindy Conservatory Backend
 
