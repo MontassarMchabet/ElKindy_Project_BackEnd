@@ -5,6 +5,10 @@ const ticketSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Event'
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', required: true 
+  },
   ticketType: {
     type: String,
     required: true
