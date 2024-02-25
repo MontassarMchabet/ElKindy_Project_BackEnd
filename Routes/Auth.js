@@ -4,6 +4,7 @@ const AuthController = require('../Controllers/AuthController')
 const authorizationByRole = require('../Middleware/Authorization')
 const authenticateToken = require('../Middleware/Authorization')
 const decodeToken = require('../Middleware/DecodeToken')
+const VerifyRefreshToken = require('../Middleware/RefreshTokenEndpoint')
 
 //registering
 router.post('/register', AuthController.registerClient)
@@ -31,6 +32,9 @@ router.get('/profs', authenticateToken, AuthController.getAllProfs)
 
 //decode token to retrieve the user id
 router.post('/decodetoken', decodeToken)
+
+//verify the refresh token
+router.post('/refreshtoken', VerifyRefreshToken)
 
 //edit functions
 router.patch('/editProfile', authenticateToken, AuthController.editProfile)
