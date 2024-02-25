@@ -139,7 +139,7 @@ const register = async (req, res) => {
             role: 'client',
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(201).json({ message: 'Client registered successfully', token });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -195,7 +195,7 @@ const registerClient = async (req, res) => {
             schoolGrade: schoolGrade ? schoolGrade : "",
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(201).json({ message: 'Client registered successfully', token, username: newClient.username });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -257,7 +257,7 @@ const registerAdmin = async (req, res) => {
             phoneNumber,
         });
         await newAdmin.save();
-        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(201).json({ message: 'Admin registered successfully', token, username: newAdmin.username });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -319,7 +319,7 @@ const registerProf = async (req, res) => {
             phoneNumber,
         });
         await newProf.save();
-        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 
         res.status(201).json({ message: 'Prof registered successfully', token, username: newProf.username });
@@ -345,7 +345,7 @@ const loginWithEmail = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ message: 'Login successful', token, username: user.username });
     } catch (error) {
         console.error('Error logging in:', error);
@@ -369,7 +369,7 @@ const loginWithUsername = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.status(200).json({ message: 'Login successful', token, username: user.username });
     } catch (error) {
         console.error('Error logging in:', error);
