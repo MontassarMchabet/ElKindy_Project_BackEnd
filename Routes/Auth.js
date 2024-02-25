@@ -5,7 +5,7 @@ const authorizationByRole = require('../Middleware/Authorization')
 const authenticateToken = require('../Middleware/Authorization')
 const decodeToken = require('../Middleware/DecodeToken')
 
-// registering
+//registering
 router.post('/register', AuthController.registerClient)
 router.post('/registerClient', AuthController.registerClient)
 router.post('/registerAdmin', authenticateToken, authorizationByRole, AuthController.registerAdmin)
@@ -18,18 +18,22 @@ router.post('/loginUsername', AuthController.loginWithUsername)
 //delete
 router.delete('/deleteUser/:id', authenticateToken, authorizationByRole, AuthController.deleteUser)
 
-// check
+//check
 router.get('/check/email/:email', AuthController.checkEmail)
 router.get('/check/username/:username', AuthController.checkUsername)
 router.get('/check/cin/:cinNumber', AuthController.checkCINAdminProf)
 router.get('/check/phone/:phoneNumber', AuthController.checkPhoneAdminProf)
 
-// get => affichage
+//get => affichage
 router.get('/admins', authenticateToken, AuthController.getAllAdmins)
 router.get('/clients', authenticateToken, AuthController.getAllClients)
 router.get('/profs', authenticateToken, AuthController.getAllProfs)
 
 //decode token to retrieve the user id
 router.post('/decodetoken', decodeToken)
+
+//edit functions
+router.patch('/editProfile', authenticateToken, AuthController.editProfile)
+router.patch('/editAdminAction', authenticateToken, authorizationByRole, AuthController.editAdminProfClient)
 
 module.exports = router

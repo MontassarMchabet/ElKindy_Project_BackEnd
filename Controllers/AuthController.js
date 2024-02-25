@@ -425,10 +425,65 @@ const getAllProfs = async (req, res) => {
     }
 };
 
+
+const editAdminProfClient = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const { email, newPassword } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (email) {
+            user.email = email;
+        }
+        if (newPassword) {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+        await user.save();
+
+        res.status(200).json({ message: 'User profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ message: 'Error updating user profile' });
+    }
+};
+
+const editProfile = async (req, res) => {
+    try {
+        const { userId } = req.user.id;
+        const { email, newPassword } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (email) {
+            user.email = email;
+        }
+        if (newPassword) {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+        await user.save();
+
+        const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '20m' });
+        res.status(200).json({ message: 'Profile updated successfully', accessToken });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Error updating profile' });
+    }
+}
+
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
     loginWithEmail, loginWithUsername,
     deleteUser,
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
-    getAllAdmins, getAllClients, getAllProfs
+    getAllAdmins, getAllClients, getAllProfs,
+    editAdminProfClient, editProfile,
 }
