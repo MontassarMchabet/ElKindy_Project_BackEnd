@@ -6,7 +6,7 @@ const authorizationByRole = (req, res, next) => {
     }
 }
 
-function authenticateToken(req, res, next) {
+const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized: Token missing' });

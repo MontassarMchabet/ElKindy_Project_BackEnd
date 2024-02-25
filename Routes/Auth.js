@@ -3,6 +3,7 @@ const router = express.Router()
 const AuthController = require('../Controllers/AuthController')
 const authorizationByRole = require('../Middleware/Authorization')
 const authenticateToken = require('../Middleware/Authorization')
+const decodeToken = require('../Middleware/DecodeToken')
 
 // registering
 router.post('/register', AuthController.registerClient)
@@ -27,5 +28,8 @@ router.get('/check/phone/:phoneNumber', AuthController.checkPhoneAdminProf)
 router.get('/admins', AuthController.getAllAdmins)
 router.get('/clients', AuthController.getAllClients)
 router.get('/profs', AuthController.getAllProfs)
+
+//decode token to retrieve the user id
+router.post('/decodetoken', decodeToken)
 
 module.exports = router
