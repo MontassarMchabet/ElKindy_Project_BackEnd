@@ -28,7 +28,6 @@ const getTicketByid = asyncHandler(async (req, res) => {
   }
 });
 
-// Middleware pour supprimer un ticket par son ID
 const deleteTicket = asyncHandler(async (req, res) => {
   const deletedTicket = await Ticket.findByIdAndDelete(req.params.id);
   if (!deletedTicket) {
