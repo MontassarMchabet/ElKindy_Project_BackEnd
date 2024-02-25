@@ -8,8 +8,8 @@ const decodeToken = require('../Middleware/DecodeToken')
 // registering
 router.post('/register', AuthController.registerClient)
 router.post('/registerClient', AuthController.registerClient)
-router.post('/registerAdmin', AuthController.registerAdmin)
-router.post('/registerProf', AuthController.registerProf)
+router.post('/registerAdmin', authenticateToken, authorizationByRole, AuthController.registerAdmin)
+router.post('/registerProf', authenticateToken, authorizationByRole, AuthController.registerProf)
 
 //login
 router.post('/loginEmail', AuthController.loginWithEmail)
@@ -25,9 +25,9 @@ router.get('/check/cin/:cinNumber', AuthController.checkCINAdminProf)
 router.get('/check/phone/:phoneNumber', AuthController.checkPhoneAdminProf)
 
 // get => affichage
-router.get('/admins', AuthController.getAllAdmins)
-router.get('/clients', AuthController.getAllClients)
-router.get('/profs', AuthController.getAllProfs)
+router.get('/admins', authenticateToken, AuthController.getAllAdmins)
+router.get('/clients', authenticateToken, AuthController.getAllClients)
+router.get('/profs', authenticateToken, AuthController.getAllProfs)
 
 //decode token to retrieve the user id
 router.post('/decodetoken', decodeToken)
