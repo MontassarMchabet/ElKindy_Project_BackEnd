@@ -1,5 +1,6 @@
 const express = require("express")
 const authRouter = require('./Routes/Auth');
+const UploadImage = require('./Controllers/UploadImage');
 const connectdb = require('./Config/db');
 var cors = require('cors')
 require('dotenv').config();
@@ -9,6 +10,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use('/api/auth', authRouter);
+app.use('/api/image', UploadImage);
 
 connectdb();
 app.listen(process.env.port, function () {

@@ -1,15 +1,12 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+const admin = require("firebase-admin");
+
+const serviceAccount = require("./elkindy-firebase-adminsdk-vw7kn-c31f0147a6.json");
 
 const firebaseConfig = {
-    apiKey: process.env.APIKEY,
-    authDomain: process.env.AUTHDOMAIN,
-    projectId: process.env.PROJECTID,
-    storageBucket: process.env.STORAGEBUCKET,
-    messagingSenderId: process.env.MESSAGINGSENDERID,
-    appId: process.env.APPID,
-    measurementId: process.env.MEASUREMENTID
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "elkindy.appspot.com"
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const app = admin.initializeApp(firebaseConfig, 'elkindy');
+
+module.exports = app;
