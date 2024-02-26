@@ -1,0 +1,8 @@
+{
+    "debug.console.fontSize": 14,
+    "scm.inputFontSize": 18,
+    "terminal.integrated.fontSize": 15,
+    "editor.scrollbar.horizontalScrollbarSize": 14,
+    "editor.scrollbar.verticalScrollbarSize": 14,
+    "editor.inlayHints.fontSize": 0
+}
