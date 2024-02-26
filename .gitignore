@@ -1,3 +1,11 @@
 node_modules
 ./.env
+/.env
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 ../Config/elkindy-firebase-adminsdk-vw7kn-c31f0147a6.json
+./Config/elkindy-firebase-adminsdk-vw7kn-c31f0147a6.json
+/Config/elkindy-firebase-adminsdk-vw7kn-c31f0147a6.json
