@@ -41,7 +41,7 @@ async function getEventbyid(req, res) {
 const deleteEvent = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
-      const deletedEvent = await event.findOneAndDelete(id);
+      const deletedEvent = await event.findByIdAndDelete(id);
       res.json(deletedEvent);
     } catch (error) {
       throw new Error(error);

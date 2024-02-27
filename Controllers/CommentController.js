@@ -41,7 +41,7 @@ async function getCommentbyid(req, res) {
 const deleteComment = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
-      const deletedComment = await comment.findOneAndDelete(id);
+      const deletedComment = await comment.findByIdAndDelete(id);
       res.json(deletedComment);
     } catch (error) {
       throw new Error(error);
