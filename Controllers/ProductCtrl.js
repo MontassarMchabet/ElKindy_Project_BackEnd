@@ -1,5 +1,7 @@
-const Product = require('../Models/Product');
+const Product = require("../Models/product");
+const User = require("../Models/User");
 const asyncHandler = require("express-async-handler");
+
 
 const createProduct = asyncHandler(async (req, res) => {
     try {
@@ -22,17 +24,100 @@ const getaProduct = asyncHandler(async (req, res) => {
 
   const getaAllProduct = asyncHandler(async (req, res) => {
     try {
-      const findAllProduct = await Product.find();
-      res.json(findAllProduct);
+      // Filtering
+      const queryObj = { ...req.query };
+      const excludeFields = ["page", "sort", "limit", "fields"];
+      excludeFields.forEach((el) => delete queryObj[el]);
+      let queryStr = JSON.stringify(queryObj);
+      queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+  
+      let query = Product.find(JSON.parse(queryStr));
+
+      // Sorting
+  
+      if (req.query.sort) {
+        const sortBy = req.query.sort.split(",").join(" ");
+        query = query.sort(sortBy);
+      } else {
+        query = query.sort("-createdAt");
+      }
+      
+      // pagination
+  
+      const page = req.query.page;
+      const limit = req.query.limit;
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+      if (req.query.page) {
+        const productCount = await Product.countDocuments();
+        if (skip >= productCount) throw new Error("This Page does not exists");
+      }
+
+
+      const product = await query;
+      res.json(product);
     } catch (error) {
       throw new Error(error);
     }
   });
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  const getAllProduct = asyncHandler(async (req, res) => {
+    try {
+      // Filtering
+      const queryObj = { ...req.query };
+      const excludeFields = ["page", "sort", "limit", "fields"];
+      excludeFields.forEach((el) => delete queryObj[el]);
+      let queryStr = JSON.stringify(queryObj);
+      queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+  
+      let query = Product.find(JSON.parse(queryStr));
+  
+      // Sorting
+  
+      if (req.query.sort) {
+        const sortBy = req.query.sort.split(",").join(" ");
+        query = query.sort(sortBy);
+      } else {
+        query = query.sort("-createdAt");
+      }
+  
+      // limiting the fields
+  
+      if (req.query.fields) {
+        const fields = req.query.fields.split(",").join(" ");
+        query = query.select(fields);
+      } else {
+        query = query.select("-__v");
+      }
+  
+      // pagination
+  
+      const page = req.query.page;
+      const limit = req.query.limit;
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+      if (req.query.page) {
+        const productCount = await Product.countDocuments();
+        if (skip >= productCount) throw new Error("This Page does not exists");
+      }
+      const product = await query;
+      res.json(product);
+    } catch (error) {
+      throw new Error(error);
+    }
+  });
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
   const deleteProduct = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
-      const deleteProduct = await Product.findOneAndDelete(id);
+      const deleteProduct = await Product.findByIdAndDelete(id);
       res.json(deleteProduct);
     } catch (error) {
       throw new Error(error);
@@ -42,7 +127,7 @@ const getaProduct = asyncHandler(async (req, res) => {
   const updateProduct = asyncHandler(async (req, res) => {
     const { id } = req.params;
     try {
-      const updatedProduct = await Product.findOneAndUpdate({ _id: id }, req.body, {
+      const updatedProduct = await Product.findByIdAndUpdate({ _id: id }, req.body, {
         new: true,
       });
       if (!updatedProduct) {
@@ -55,10 +140,43 @@ const getaProduct = asyncHandler(async (req, res) => {
     }
   });
 
+
+  const addToWishlist = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { prodId } = req.body;
+    try {
+      const user = await User.findById(userId);
+      const alreadyAdded = user.wishlist.find(productId => productId.toString() === prodId);
+      if (alreadyAdded) {
+        await User.findByIdAndUpdate(
+          userId,
+          { $pull: { wishlist: prodId } },
+          { new: true }
+        );
+      } else {
+        await User.findByIdAndUpdate(
+          userId,
+          { $push: { wishlist: prodId } },
+          { new: true }
+        );
+      }
+      // Fetch user again to get the updated wishlist
+      const updatedUser = await User.findById(userId);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      res.status(500).json({ message: 'Error adding to wishlist' });
+    }
+});
+
+
+
 module.exports = {
     createProduct,
     getaProduct,
     getaAllProduct,
     deleteProduct,
     updateProduct,
+    getAllProduct,
+    addToWishlist,
 };
