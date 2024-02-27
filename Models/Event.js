@@ -27,14 +27,24 @@ const eventSchema = mongoose.Schema(
           type: Number,
           required: true
         },
-        room: {
-            name: { type: String },
-            shape: { type: String },
-            capacity: { type: Number },
-            distributionSeats: [{ type: String }] // You can adjust the type according to the seat distribution structure
-        }
-
+        room_name: { 
+            type: String,
+            required: true
+        },
+        room_shape: { 
+            type: String,
+            // enum: ['Rectangular', 'Triangular', 'Circle','Square'],
+            // default: 'midterm exam'
+            required: true
+        },
+        room_capacity: {
+             type: Number,
+             required: true 
+        },
+        room_distributionSeats: [{ type: String }] // You can adjust the type according to the seat distribution structure
     }
+
+    
 )
 
 const Event = mongoose.model('Event', eventSchema);
