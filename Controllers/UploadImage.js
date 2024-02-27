@@ -1,13 +1,11 @@
-// uploadImage.js
 const express = require("express");
 const multer = require("multer");
 const adminApp = require("../Config/Firebase");
-
 const router = express.Router();
 const storage = adminApp.storage();
 const bucket = storage.bucket();
-
 const upload = multer({ storage: multer.memoryStorage() });
+
 
 router.post("/uploadimage", upload.single("image"), async (req, res) => {
     try {

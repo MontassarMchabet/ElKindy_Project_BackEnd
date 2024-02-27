@@ -139,8 +139,15 @@ const register = async (req, res) => {
             role: 'client',
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: newClient._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        
+        const payloadOne = {
+            userId: newClient._id,
+            role: newClient.role
+        };
+        
+        const token = jwt.sign(payloadOne, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadOne, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -196,8 +203,15 @@ const registerClient = async (req, res) => {
             schoolGrade: schoolGrade ? schoolGrade : "",
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: newClient._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        
+        const payloadClient = {
+            userId: newClient._id,
+            role: newClient.role
+        };
+        
+        const token = jwt.sign(payloadClient, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadClient, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -259,8 +273,15 @@ const registerAdmin = async (req, res) => {
             phoneNumber,
         });
         await newAdmin.save();
-        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: newAdmin._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        const payloadAdmin = {
+            userId: newAdmin._id,
+            role: newAdmin.role
+        };
+
+        const token = jwt.sign(payloadAdmin, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadAdmin, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        
         res.status(201).json({ message: 'Admin registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -323,8 +344,13 @@ const registerProf = async (req, res) => {
         });
         await newProf.save();
 
-        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: newProf._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        const payloadProf = {
+            userId: newProf._id,
+            role: newProf.role
+        };
+
+        const token = jwt.sign(payloadProf, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadProf, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
         res.status(201).json({ message: 'Prof registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -348,8 +374,14 @@ const loginWithEmail = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        const payload = {
+            userId: user._id,
+            role: user.role
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
         res.status(200).json({ message: 'Login successful', token, refreshToken });
     } catch (error) {
         console.error('Error logging in:', error);
@@ -373,8 +405,14 @@ const loginWithUsername = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        const payload = {
+            userId: user._id,
+            role: user.role
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
         res.status(200).json({ message: 'Login successful', token, refreshToken });
     } catch (error) {
         console.error('Error logging in:', error);
@@ -485,6 +523,23 @@ const editProfile = async (req, res) => {
     }
 }
 
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
     loginWithEmail, loginWithUsername,
@@ -492,4 +547,5 @@ module.exports = {
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
     getAllAdmins, getAllClients, getAllProfs,
     editAdminProfClient, editProfile,
+    getUserById
 }

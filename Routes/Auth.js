@@ -1,10 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const AuthController = require('../Controllers/AuthController')
-const authorizationByRole = require('../Middleware/Authorization')
-const authenticateToken = require('../Middleware/Authorization')
 const decodeToken = require('../Middleware/DecodeToken')
 const VerifyRefreshToken = require('../Middleware/RefreshTokenEndpoint')
+const { authenticateToken, authorizationByRole } = require('../Middleware/Authorization');
+
 
 //registering
 router.post('/register', AuthController.registerClient)
@@ -30,14 +30,13 @@ router.get('/admins', authenticateToken, AuthController.getAllAdmins)
 router.get('/clients', authenticateToken, AuthController.getAllClients)
 router.get('/profs', authenticateToken, AuthController.getAllProfs)
 
-//decode token to retrieve the user id
-router.post('/decodetoken', decodeToken)
-
 //verify the refresh token
 router.post('/refreshtoken', VerifyRefreshToken)
 
 //edit functions
 router.patch('/editProfile', authenticateToken, AuthController.editProfile)
 router.patch('/editAdminAction', authenticateToken, authorizationByRole, AuthController.editAdminProfClient)
+
+router.get('/user/:id', AuthController.getUserById)
 
 module.exports = router
