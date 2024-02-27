@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const multer = require('multer');
+const Exam = require('../Models/Exam');
 const {createExam, getExam, getAllExam, deleteExam, updateExam} = require("../Controllers/ExamController");
+
 
   router.post("/", createExam);
   router.get("/:id", getExam);
