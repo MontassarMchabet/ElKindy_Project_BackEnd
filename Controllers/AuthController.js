@@ -139,15 +139,15 @@ const register = async (req, res) => {
             role: 'client',
         });
         await newClient.save();
-        
+
         const payloadOne = {
             userId: newClient._id,
             role: newClient.role
         };
-        
+
         const token = jwt.sign(payloadOne, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadOne, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-        
+
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -203,15 +203,15 @@ const registerClient = async (req, res) => {
             schoolGrade: schoolGrade ? schoolGrade : "",
         });
         await newClient.save();
-        
+
         const payloadClient = {
             userId: newClient._id,
             role: newClient.role
         };
-        
+
         const token = jwt.sign(payloadClient, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadClient, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-        
+
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -281,7 +281,7 @@ const registerAdmin = async (req, res) => {
 
         const token = jwt.sign(payloadAdmin, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadAdmin, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-        
+
         res.status(201).json({ message: 'Admin registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -470,22 +470,44 @@ const getAllProfs = async (req, res) => {
 };
 
 
-const editAdminProfClient = async (req, res) => {
+const editAdminProf = async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const { email, newPassword } = req.body;
+        const userId = req.params.id;
+        const { name, lastname, email, username, password, dateOfBirth, role,
+            phoneNumber, cinNumber, profilePicture
+        } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
+        if (name) {
+            user.name = name;
+        }
+        if (lastname) {
+            user.lastname = lastname;
+        }
         if (email) {
             user.email = email;
         }
-        if (newPassword) {
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
+        if (username) {
+            user.username = username;
+        }
+        if (dateOfBirth) {
+            user.dateOfBirth = dateOfBirth;
+        }
+        if (phoneNumber) {
+            user.phoneNumber = phoneNumber;
+        }
+        if (cinNumber) {
+            user.cinNumber = cinNumber;
+        }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
             user.password = hashedPassword;
+        }
+        if (profilePicture) {
+            user.profilePicture = profilePicture;
         }
         await user.save();
 
@@ -496,32 +518,79 @@ const editAdminProfClient = async (req, res) => {
     }
 };
 
-const editProfile = async (req, res) => {
+
+const editClient = async (req, res) => {
     try {
-        const { userId } = req.user.id;
-        const { email, newPassword } = req.body;
+        const userId = req.params.id;
+        const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
+            parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
+            fatherOccupation, motherOccupation, isSubscribed, schoolGrade
+        } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        if (name) {
+            user.name = name;
+        }
+        if (lastname) {
+            user.lastname = lastname;
+        }
         if (email) {
             user.email = email;
         }
-        if (newPassword) {
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
+        if (username) {
+            user.username = username;
+        }
+        if (dateOfBirth) {
+            user.dateOfBirth = dateOfBirth;
+        }
+        if (role) {
+            user.role = role;
+        }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
             user.password = hashedPassword;
         }
+        if (profilePicture) {
+            user.profilePicture = profilePicture;
+        }
+
+        if (parentCinNumber) {
+            user.parentCinNumber = parentCinNumber;
+        }
+        if (instrument) {
+            user.instrument = instrument;
+        }
+        if (otherInstruments) {
+            user.otherInstruments = otherInstruments;
+        }
+        if (fatherOccupation) {
+            user.fatherOccupation = fatherOccupation;
+        }
+        if (motherOccupation) {
+            user.motherOccupation = motherOccupation;
+        }
+        if (schoolGrade) {
+            user.schoolGrade = schoolGrade;
+        }
+        if (isSubscribed) {
+            user.isSubscribed = isSubscribed;
+        }
+        if (parentPhoneNumber){
+            user.parentPhoneNumber = parentPhoneNumber;
+        }
+
         await user.save();
 
-        const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
-        res.status(200).json({ message: 'Profile updated successfully', accessToken });
+        res.status(200).json({ message: 'User profile updated successfully' });
     } catch (error) {
-        console.error('Error updating profile:', error);
-        res.status(500).json({ message: 'Error updating profile' });
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ message: 'Error updating user profile' });
     }
-}
+};
 
 const getUserById = async (req, res) => {
     try {
@@ -546,6 +615,6 @@ module.exports = {
     deleteUser,
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
     getAllAdmins, getAllClients, getAllProfs,
-    editAdminProfClient, editProfile,
+    editAdminProf, editClient,
     getUserById
 }
