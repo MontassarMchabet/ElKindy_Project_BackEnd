@@ -1,24 +1,36 @@
 const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
+const User = require('../Models/User');
 
-const authenticateToken = (req, res, next) => {
-    const token = req.headers.authorization;
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized: Token missing' });
-    }
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'Forbidden: Invalid token' });
+const authMiddleware = asyncHandler(async (req, res, next) => {
+    let token;
+    if (req?.headers?.authorization && req?.headers?.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = await User.findById(decoded.id);
+            next();
+        } catch (error) {
+            console.error("Token verification error:", error);
+            res.status(401);
+            throw new Error('Not authorized, token failed');
         }
-        next();
-    });
-}
+    } else {
+        res.status(401);
+        throw new Error('Not authorized');
+    }
+});
 
-const authorizationByRole = (req, res, next) => {
-    if (req.User && req.User.role == 'admin') {
+const adminMiddleware = asyncHandler(async (req, res, next) => {
+    const emailUser = req.user;
+    const user = await User.findOne(emailUser);
+
+    if (user.role === 'admin') {
         next();
     } else {
-        res.staus(403).send('Unauthorized');
+        res.status(401);
+        throw new Error('Not authorized as an admin');
     }
-}
+});
 
-module.exports = { authenticateToken, authorizationByRole };
+module.exports = { authMiddleware, adminMiddleware };

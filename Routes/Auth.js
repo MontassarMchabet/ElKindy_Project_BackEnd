@@ -3,7 +3,7 @@ const router = express.Router()
 const AuthController = require('../Controllers/AuthController')
 const decodeToken = require('../Helpers/DecodeToken')
 const VerifyRefreshToken = require('../Helpers/RefreshTokenEndpoint')
-const { authenticateToken, authorizationByRole } = require('../Middleware/Authorization');
+const { authMiddleware } = require('../Middleware/Authorization');
 
 
 //registering
@@ -38,5 +38,12 @@ router.patch('/editAdminProf/:id', AuthController.editAdminProf)
 router.patch('/editClient/:id', AuthController.editClient)
 
 router.get('/user/:id', AuthController.getUserById)
+
+
+// password reset
+router.post('/forgotpasswordtoken', AuthController.forgotPasswordToken)
+router.put('/passwordReset', authMiddleware, AuthController.updatePassword)
+router.put('/passwordReset/:token', AuthController.resetPassword)
+
 
 module.exports = router

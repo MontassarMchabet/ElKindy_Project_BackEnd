@@ -4,6 +4,13 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../Models/Admin');
 const Prof = require('../Models/Prof');
 const Client = require('../Models/Client');
+const validateMongoDbId = require('../Helpers/ValidateID');
+const crypto = require('crypto');
+const sendEmail = require('../Controllers/NodeMailer');
+const fs = require('fs');
+const path = require('path');
+const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
+
 
 const checkCINAdminProf = async (req, res) => {
     try {
@@ -579,7 +586,7 @@ const editClient = async (req, res) => {
         if (isSubscribed) {
             user.isSubscribed = isSubscribed;
         }
-        if (parentPhoneNumber){
+        if (parentPhoneNumber) {
             user.parentPhoneNumber = parentPhoneNumber;
         }
 
@@ -609,6 +616,75 @@ const getUserById = async (req, res) => {
     }
 }
 
+
+
+const updatePassword = async (req, res) => {
+    const { _id } = req.user;
+    const { password } = req.body;
+    validateMongoDbId(_id);
+    const user = await User.findById(_id);
+    if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        const updatedUser = await user.save();
+        res.json(updatedUser);
+    } else {
+        res.json(user);
+    }
+}
+
+const forgotPasswordToken = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    } else {
+        try {
+            const token = await user.createPasswordResetToken();
+            await user.save();
+
+            const htmlTemplate = fs.readFileSync(filePath, 'utf8');
+
+            const resetURL = `${process.env.CLIENT_URL}/passwordReset/${token}`;
+            const emailContent = htmlTemplate
+                .replace('{{ username }}', user.username)
+                .replace('{{ resetURL }}', resetURL);
+
+            const data = {
+                to: user.email,
+                subject: "Password reset",
+                html: emailContent
+            };
+            await sendEmail(data, req, res);
+            res.status(200).json({ message: "Password reset token sent successfully" });
+        } catch (error) {
+            console.error('Error sending password reset token:', error);
+            res.status(500).json({ message: 'Error sending password reset token' });
+        }
+    }
+}
+
+const resetPassword = async (req, res) => {
+    const { password } = req.body;
+    const resetToken = req.params.token;
+    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const user = await User.findOne({
+        passwordResetToken: resetPasswordToken,
+        passwordResetExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return res.status(400).json({ message: "Invalid token" });
+    }
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpire = undefined;
+    await user.save();
+    res.status(200).json({ message: "Password reset successfully" });
+}
+
+
+
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
     loginWithEmail, loginWithUsername,
@@ -616,5 +692,6 @@ module.exports = {
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
     getAllAdmins, getAllClients, getAllProfs,
     editAdminProf, editClient,
-    getUserById
+    getUserById,
+    resetPassword, forgotPasswordToken, updatePassword
 }
