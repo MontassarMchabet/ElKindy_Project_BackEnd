@@ -1,11 +1,13 @@
-const Room = require('../models/Room');
+const Room = require('../Models/Room');
 
 const createRoom = async (req, res) => {
     try {
-        const { name, capacity } = req.body;
+        const { room_number, capacity,location } = req.body;
         const newRoom = new Room({
-            name,
-            capacity
+            room_number,
+            capacity,
+            location
+
         });
         const savedRoom = await newRoom.save();
         res.status(201).json(savedRoom);

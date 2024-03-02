@@ -2,13 +2,11 @@ const Course = require('../Models/Course');
 
 const createCourse = async (req, res) => {
     try {
-        const { name, type, duration, startDate, endDate, capacity } = req.body;
+        const { name, type, duration, capacity } = req.body;
         const newCourse = new Course({
             name,
             type,
             duration,
-            startDate,
-            endDate,
             capacity
         });
         const savedCourse = await newCourse.save();
@@ -46,13 +44,11 @@ const getCourseById = async (req, res) => {
 const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, type, duration, startDate, endDate, capacity } = req.body;
+        const { name, type, duration, capacity } = req.body;
         const updatedCourse = await Course.findByIdAndUpdate(id, {
             name,
             type,
             duration,
-            startDate,
-            endDate,
             capacity
         }, { new: true });
         if (!updatedCourse) {

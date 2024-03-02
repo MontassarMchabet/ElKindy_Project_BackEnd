@@ -1,67 +1,71 @@
 const Planning = require('../models/Planning');
-const Room = require('../models/Room');
+const Room = require('../Models/Room');
 const User = require('../models/UsersP');
 
 //////////////////////// create ///////////////////
 
-const isStudentsAndTeacherAvailable = async (roomId, date, startTime, endTime, studentIds, teacherId) => {
-    // Vérifier la disponibilité de la salle
+const isRoomAvailable = async (roomId, date, startTime, endTime) => {
     const existingPlanningInRoom = await Planning.findOne({
         roomId,
         date,
         $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } }, // Vérifier si les plages horaires se chevauchent
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } } // Vérifier si les plages horaires sont les mêmes
+            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
         ]
     });
-    if (existingPlanningInRoom) {
-        return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
-    }
+    return !existingPlanningInRoom;
+};
 
-    // Vérifier la disponibilité des étudiants
+const areStudentsAvailable = async (studentIds, date, startTime, endTime) => {
     for (const studentId of studentIds) {
         const existingPlanningForStudent = await Planning.findOne({
             date,
             studentIds: studentId,
             $or: [
-                { startTime: { $lt: endTime }, endTime: { $gt: startTime } }, // Vérifier si les plages horaires se chevauchent
-                { startTime: { $eq: startTime }, endTime: { $eq: endTime } } // Vérifier si les plages horaires sont les mêmes
+                { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+                { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
             ]
         });
         if (existingPlanningForStudent) {
-            return res.status(400).json({ message: "L'étudiant est déjà occupé à ce moment-là." });
+            return false;
         }
     }
+    return true;
+};
 
-    // Vérifier la disponibilité de l'enseignant
+const isTeacherAvailable = async (teacherId, date, startTime, endTime) => {
     const existingPlanningForTeacher = await Planning.findOne({
         date,
         teacherId,
         $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } }, // Vérifier si les plages horaires se chevauchent
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } } // Vérifier si les plages horaires sont les mêmes
+            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
         ]
     });
-    if (existingPlanningForTeacher) {
-        return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
-    }
-
-    return true; // pas PRB de planification trouvé
+    return !existingPlanningForTeacher;
 };
 
-
 const createPlanning = async (req, res) => {
+    const session = await Planning.startSession();
+    session.startTransaction();
     try {
-        // Validation des données d'entrées 
         const { courseId, date, startTime, endTime, roomId, teacherId, studentIds } = req.body;
 
-        // Vérifier la disponibilité de la salle 
-        const isRoomAvailable = await isStudentsAndTeacherAvailable(roomId, date, startTime, endTime, studentIds, teacherId);
-        if (!isRoomAvailable) {
+        const isRoomAvailableResult = await isRoomAvailable(roomId, date, startTime, endTime);
+        if (!isRoomAvailableResult) {
             return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
         }
 
-        // Créer le planning
+        const areStudentsAvailableResult = await areStudentsAvailable(studentIds, date, startTime, endTime);
+        if (!areStudentsAvailableResult) {
+            return res.status(400).json({ message: "Certains étudiants sont déjà occupés à ce moment-là." });
+        }
+
+        const isTeacherAvailableResult = await isTeacherAvailable(teacherId, date, startTime, endTime);
+        if (!isTeacherAvailableResult) {
+            return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
+        }
+
         const newPlanning = new Planning({
             courseId,
             date,
@@ -73,14 +77,20 @@ const createPlanning = async (req, res) => {
         });
 
         // Sauvegarder le planning dans BD
-        const savedPlanning = await newPlanning.save();
+        const savedPlanning = await newPlanning.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
 
         res.status(201).json(savedPlanning);
     } catch (error) {
         console.error("Erreur lors de la création du planning :", error);
+        await session.abortTransaction();
+        session.endSession();
         res.status(500).json({ message: "Une erreur s'est produite lors de la création du planning." });
     }
 };
+
 ////////////// Read ////////////////////////////////////////////
 const getAllPlannings = async (req, res) => {
     try {
