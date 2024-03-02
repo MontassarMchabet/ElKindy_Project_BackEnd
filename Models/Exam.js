@@ -14,12 +14,9 @@ var examSchema = new mongoose.Schema(
     endAt: {
         type: Date,
     },
-    images: [
-      {
-        public_id: String,
-        url: String,
-      },
-    ],
+    pdfFile: {
+      type: String
+  },
     type: {
         type: String,
         enum: ['revison', 'end of year exam', 'midterm exam'],
