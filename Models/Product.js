@@ -22,7 +22,7 @@ var productSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      default:"test"
+      required: true,
     },
     images: [
       {

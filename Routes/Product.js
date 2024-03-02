@@ -8,7 +8,7 @@ const {createProduct, getaProduct, getaAllProduct, deleteProduct, updateProduct,
   router.get("/getall", getAllProduct);
   router.delete("/:id", deleteProduct);
   router.put("/:id", updateProduct);
-  router.put("/wishlist", addToWishlist);
+  router.put("/wishlist/:idUser", addToWishlist);
 
 
 
