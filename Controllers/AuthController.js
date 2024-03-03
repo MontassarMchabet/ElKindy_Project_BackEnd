@@ -645,7 +645,7 @@ const forgotPasswordToken = async (req, res) => {
 
             const htmlTemplate = fs.readFileSync(filePath, 'utf8');
 
-            const resetURL = `${process.env.CLIENT_URL}/passwordReset/${token}`;
+            const resetURL = `http://localhost:3000/elkindy#/passwordReset/${token}`;
             const emailContent = htmlTemplate
                 .replace('{{ username }}', user.username)
                 .replace('{{ resetURL }}', resetURL);
@@ -676,7 +676,8 @@ const resetPassword = async (req, res) => {
     if (!user) {
         return res.status(400).json({ message: "Invalid token" });
     }
-    user.password = password;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetExpire = undefined;
     await user.save();
