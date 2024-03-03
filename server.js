@@ -14,7 +14,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/event', eventRouter);
 app.use('/comment', commentRouter);
-app.use('/ticket', ticketRouter);
+app.use('/tickets', ticketRouter);
 
 connectdb();
 app.listen(process.env.port, function () {

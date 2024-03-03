@@ -1,5 +1,7 @@
 const event = require('../Models/Event.js');
 const asyncHandler = require("express-async-handler");
+const Ticket = require('../Models/Ticket.js');
+const Comment = require('../Models/Comment.js');
 
 async function getAllEvent(req,res){
     try{ 
@@ -38,6 +40,42 @@ async function getEventbyid(req, res) {
     res.send(err);
   }
 }
+// async function getEventTicketsPage(req, res) {
+  // try {
+    
+  //   // Recherchez l'événement dans la base de données en utilisant son ID
+  //   const event = await event.findById(req.params.id);
+//     if (!event) {
+//         return res.status(404).json({ error: "Événement non trouvé" });
+//     }
+//     // Renvoyer la page de tickets liée à cet événement
+//     res.render('tickets', { event });
+// } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erreur serveur" });
+// }
+async function getEventTickets(req, res) {
+
+  try {
+    const eventId = req.params.eventId;
+    const tickets = await Ticket.find({ event: eventId });
+    res.json(tickets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
+async function getEventComments(req, res) {
+
+  try {
+    const eventId = req.params.eventId;
+    const comments = await Comment.find({ event: eventId });
+    res.json(comments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
 const deleteEvent = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
@@ -66,5 +104,5 @@ const updateEvent = asyncHandler(async (req, res) => {
   });
 
   module.exports = {
-    getAllEvent,getEventbyid,addEvent,deleteEvent,updateEvent
+    getAllEvent,getEventbyid,addEvent,deleteEvent,updateEvent,getEventTickets,getEventComments
   };

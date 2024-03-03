@@ -18,5 +18,7 @@ router.put("/update/:id", eventController.updateEvent);
 
 /* delete event */
 router.delete("/delete/:id", eventController.deleteEvent);
+router.get('/:eventId/tickets', eventController.getEventTickets);
+router.get('/:eventId/comments', eventController.getEventComments);
 
 module.exports = router;
