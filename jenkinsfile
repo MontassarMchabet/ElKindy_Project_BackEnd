@@ -15,11 +15,13 @@ pipeline{
         }
         stage('Unit Test') {
             steps{
-                try {
-                    sh('npm test')
-                } catch (err) {
-                    currentBuild.result = 'FAILURE'
-                    error("Unit tests failed: ${err}")
+                script{
+                    try {
+                        sh('npm test')
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        error("Unit tests failed: ${err}")
+                    }
                 }
             }
         }
