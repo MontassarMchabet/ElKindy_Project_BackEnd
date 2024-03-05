@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {createProduct, getaProduct, getaAllProduct, deleteProduct, updateProduct, getAllProduct, addToWishlist, getWishlist} = require("../Controllers/ProductCtrl");
+const {createProduct, getaProduct, getaAllProduct, deleteProduct, updateProduct, getAllProduct, addToWishlist, rating} = require("../Controllers/ProductCtrl");
 
   router.post("/", createProduct);
   router.get("/:id", getaProduct);
@@ -9,6 +9,7 @@ const {createProduct, getaProduct, getaAllProduct, deleteProduct, updateProduct,
   router.delete("/:id", deleteProduct);
   router.put("/:id", updateProduct);
   router.put("/wishlist/:idUser", addToWishlist);
+  router.put("/rating/:idUser", rating);
 
 
 
