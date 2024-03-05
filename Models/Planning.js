@@ -6,8 +6,8 @@ const planningSchema = new mongoose.Schema({
   endTime: { type: String, required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
   roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  studentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserP', required: true },
+  studentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserP' }]
   
 });
 

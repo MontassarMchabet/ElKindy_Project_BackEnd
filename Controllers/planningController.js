@@ -1,7 +1,7 @@
 const Planning = require('../models/Planning');
 const Room = require('../Models/Room');
 const User = require('../models/UsersP');
-
+const validatePlanning = require('./validatePlanning');
 //////////////////////// create ///////////////////
 
 const isRoomAvailable = async (roomId, date, startTime, endTime) => {
@@ -65,7 +65,11 @@ const createPlanning = async (req, res) => {
         if (!isTeacherAvailableResult) {
             return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
         }
-
+         // Validation du nombre d'heures d'étude par semaine
+         const isValidPlanning = await validatePlanning(studentIds,courseId, date, startTime, endTime);
+         if (!isValidPlanning) {
+             return res.status(400).json({ message: "Le nombre d'heures d'étude par semaine est dépassé pour cet utilisateur." });
+         }
         const newPlanning = new Planning({
             courseId,
             date,
