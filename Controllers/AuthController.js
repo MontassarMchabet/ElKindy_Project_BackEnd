@@ -10,6 +10,7 @@ const sendEmail = require('../Controllers/NodeMailer');
 const fs = require('fs');
 const path = require('path');
 const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
+const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
 
 
 const checkCINAdminProf = async (req, res) => {
@@ -281,6 +282,19 @@ const registerAdmin = async (req, res) => {
         });
         await newAdmin.save();
 
+        const htmlTemplate = fs.readFileSync(filePathTwo, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ username }}', username)
+            .replace('{{ email }}', email)
+            .replace('{{ password }}', password);
+
+        const data = {
+            to: newAdmin.email,
+            subject: "Hi there! Welcome to Elkindy!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
         const payloadAdmin = {
             userId: newAdmin._id,
             role: newAdmin.role
@@ -351,6 +365,20 @@ const registerProf = async (req, res) => {
         });
         await newProf.save();
 
+        const htmlTemplate = fs.readFileSync(filePathTwo, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ username }}', username)
+            .replace('{{ email }}', email)
+            .replace('{{ password }}', password);
+
+        const data = {
+            to: newProf.email,
+            subject: "Hi there! Welcome to Elkindy!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
+
         const payloadProf = {
             userId: newProf._id,
             role: newProf.role
@@ -388,6 +416,9 @@ const loginWithEmail = async (req, res) => {
 
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true, secure: false });
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true, secure: false });
 
         res.status(200).json({ message: 'Login successful', token, refreshToken });
     } catch (error) {
