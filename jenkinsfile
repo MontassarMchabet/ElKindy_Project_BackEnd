@@ -1,32 +1,35 @@
 pipeline{
     agent any
-    tools{
-        nodejs '21.6.2'
-    }
     stages {
         stage('Install dependencies') {
             steps{
                 script {
-                    try {
-                        sh('npm install')
-                    } catch (err) {
-                        currentBuild.result = 'FAILURE'
-                        error("Failed to install dependencies: ${err}")
-                    }
+                    sh('npm install')
                 }
             }
         }
         stage('Unit Test') {
-            steps {
+            steps{
                 script {
-                    echo 'This is a testing stage for unit tests.'
+                    sh('npm test')
                 }
             }
         }
-        stage('Build application') {
-            steps {
+        stage('SonarQube Analysis') {
+                steps{
                 script {
-                    echo 'This is a testing stage for building the application.'
+            def scannerHome = tool 'scanner'
+                withSonarQubeEnv {
+            sh "${scannerHome}/bin/sonar-scanner"
+                    }   
+                }
+            }
+        }
+
+        stage('Build application') {
+            steps{
+                script {
+                    sh('npm run build-dev')
                 }
             }
         }
