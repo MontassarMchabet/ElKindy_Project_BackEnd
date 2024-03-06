@@ -3,7 +3,7 @@ const router = express.Router()
 const AuthController = require('../Controllers/AuthController')
 const decodeToken = require('../Helpers/DecodeToken')
 const VerifyRefreshToken = require('../Helpers/RefreshTokenEndpoint')
-const { authMiddleware } = require('../Middleware/Authorization');
+const { authMiddleware, adminMiddleware } = require('../Middleware/Authorization');
 
 
 //registering
@@ -17,7 +17,7 @@ router.post('/loginEmail', AuthController.loginWithEmail)
 router.post('/loginUsername', AuthController.loginWithUsername)
 
 //delete
-router.delete('/deleteUser/:id', AuthController.deleteUser)
+router.delete('/deleteUser/:id', authMiddleware, adminMiddleware, AuthController.deleteUser)
 
 //check
 router.get('/check/email/:email', AuthController.checkEmail)

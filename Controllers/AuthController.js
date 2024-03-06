@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
 const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
-
+const filePathThree = path.join(__dirname, '..', 'EmailTemplate', 'SendVerificationCode.html');
 
 const checkCINAdminProf = async (req, res) => {
     try {
@@ -167,7 +167,7 @@ const registerClient = async (req, res) => {
     try {
         const { name, lastname, email, password, username, dateOfBirth, profilePicture,
             parentCinNumber, parentPhoneNumber, instrument, otherInstruments, fatherOccupation, motherOccupation,
-            schoolGrade } = req.body;
+            schoolGrade, verificationCode } = req.body;
 
         if (!name || !lastname || !email || !password || !username) {
             return res.status(400).json({ message: 'All fields are required.' });
@@ -188,6 +188,22 @@ const registerClient = async (req, res) => {
             return res.status(400).json({ message: 'Username already taken.' });
         }
 
+        const generatedCode = Math.floor(10000 + Math.random() * 90000);
+        const htmlTemplate = fs.readFileSync(filePathThree, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ email }}', email)
+            .replace('{{ username }}', username)
+            .replace('{{ verificationCode }}', generatedCode);
+        const data = {
+            to: email,
+            subject: "Hi there! Verify your email address!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+        if (verificationCode !== generatedCode.toString()) {
+            return res.status(400).json({ message: 'Invalid verification code.' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newClient = new Client({
             name,
@@ -197,7 +213,7 @@ const registerClient = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'client',
 
 
