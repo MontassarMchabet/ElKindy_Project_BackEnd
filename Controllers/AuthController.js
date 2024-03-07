@@ -163,6 +163,55 @@ const register = async (req, res) => {
     }
 };
 
+const hashVerificationCode = async (req, res) => {
+    try {
+        let { verificationCode } = req.body;
+        if (typeof verificationCode !== 'string') {
+            verificationCode = String(verificationCode);
+        }
+        const hashedCode = await bcrypt.hash(verificationCode, 10);
+        res.status(200).json({ hashedCode });
+    } catch (error) {
+        console.error('Error hashing verification code:', error);
+        res.status(500).json({ message: 'Error hashing verification code' });
+    }
+}
+
+const compareVerificationCode = async (req, res) => {
+    try {
+        const { code, hashedVerificationCode } = req.body;
+        const isMatch = await bcrypt.compare(code, hashedVerificationCode);
+        res.status(200).json({ isMatch });
+    } catch (error) {
+        console.error('Error comparing verification code:', error);
+        res.status(500).json({ message: 'Error comparing verification code' });
+    }
+}
+
+const sendVerificationCode = async (req, res) => {
+    const { email, username } = req.body;
+    try {
+        const generatedCode = Math.floor(10000 + Math.random() * 90000);
+        const htmlTemplate = fs.readFileSync(filePathThree, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ email }}', email)
+            .replace('{{ username }}', username)
+            .replace('{{ verificationCode }}', generatedCode);
+        const data = {
+            to: email,
+            subject: "Hi there! Verify your email address!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
+        res.status(200).json({ message: 'Verification code sent successfully', verificationCode: generatedCode });
+    } catch (error) {
+        console.error('Error sending verification code:', error);
+        res.status(500).json({ message: 'Error sending verification code' });
+    }
+}
+
+
 const registerClient = async (req, res) => {
     try {
         const { name, lastname, email, password, username, dateOfBirth, profilePicture,
@@ -188,21 +237,7 @@ const registerClient = async (req, res) => {
             return res.status(400).json({ message: 'Username already taken.' });
         }
 
-        const generatedCode = Math.floor(10000 + Math.random() * 90000);
-        const htmlTemplate = fs.readFileSync(filePathThree, 'utf8');
-        const emailContent = htmlTemplate
-            .replace('{{ email }}', email)
-            .replace('{{ username }}', username)
-            .replace('{{ verificationCode }}', generatedCode);
-        const data = {
-            to: email,
-            subject: "Hi there! Verify your email address!",
-            html: emailContent
-        };
-        await sendEmail(data, req, res);
-        if (verificationCode !== generatedCode.toString()) {
-            return res.status(400).json({ message: 'Invalid verification code.' });
-        }
+
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newClient = new Client({
@@ -741,5 +776,6 @@ module.exports = {
     getAllAdmins, getAllClients, getAllProfs,
     editAdminProf, editClient,
     getUserById,
-    resetPassword, forgotPasswordToken, updatePassword
+    resetPassword, forgotPasswordToken, updatePassword,
+    sendVerificationCode, hashVerificationCode, compareVerificationCode
 }

@@ -46,4 +46,8 @@ router.put('/passwordReset', authMiddleware, AuthController.updatePassword)
 router.put('/passwordReset/:token', AuthController.resetPassword)
 
 
+router.post('/verificationCode', AuthController.sendVerificationCode)
+router.post('/hashverificationcode', AuthController.hashVerificationCode)
+router.post('/verifycode', AuthController.compareVerificationCode)
+
 module.exports = router
