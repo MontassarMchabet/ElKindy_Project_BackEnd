@@ -3,6 +3,7 @@ pipeline{
     tools{
         nodejs '21.6.2'
     }
+
     stages {
         stage('Install dependencies') {
             steps{
@@ -13,15 +14,11 @@ pipeline{
                         currentBuild.result = 'FAILURE'
                         error("Failed to install dependencies: ${err}")
                     }
+
                 }
             }
         }
         stage('Unit Test') {
-<<<<<<< HEAD
-            steps {
-                script {
-                    echo 'This is a testing stage for unit tests.'
-=======
 
             steps{
                 script{
@@ -31,26 +28,38 @@ pipeline{
                         currentBuild.result = 'FAILURE'
                         error("Unit tests failed: ${err}")
                     }
->>>>>>> a07d3c8b5f7f8dc490bd518f3f5f0b38bb7efefe
                 }
             }
         }
-        stage('Build application') {
-<<<<<<< HEAD
-            steps {
+        stage('SonarQube Analysis') {
+                steps{
                 script {
-                    echo 'This is a testing stage for building the application.'
-=======
+                    try{
+                        def scannerHome = tool 'scanner'
+                withSonarQubeEnv {
+            sh "${scannerHome}/bin/sonar-scanner"
+                    } 
+                    }
+                catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to build application: ${err}")
+                    }
+                }
+            }
+        }
+
+        stage('Build application') {
 
             steps{
                 script {
                     try {
                         echo 'This is a testing stage for build application.'
+
                     } catch (err) {
                         currentBuild.result = 'FAILURE'
                         error("Failed to build application: ${err}")
                     }
->>>>>>> a07d3c8b5f7f8dc490bd518f3f5f0b38bb7efefe
+
                 }
             }
         }
