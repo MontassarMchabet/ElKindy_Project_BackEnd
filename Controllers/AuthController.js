@@ -156,6 +156,9 @@ const register = async (req, res) => {
         const token = jwt.sign(payloadOne, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadOne, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -271,6 +274,9 @@ const registerClient = async (req, res) => {
         const token = jwt.sign(payloadClient, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadClient, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -353,6 +359,9 @@ const registerAdmin = async (req, res) => {
 
         const token = jwt.sign(payloadAdmin, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadAdmin, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(201).json({ message: 'Admin registered successfully', token, refreshToken });
     } catch (error) {
@@ -437,6 +446,10 @@ const registerProf = async (req, res) => {
 
         const token = jwt.sign(payloadProf, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payloadProf, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
         res.status(201).json({ message: 'Prof registered successfully', token, refreshToken });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -468,8 +481,8 @@ const loginWithEmail = async (req, res) => {
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
-        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true, secure: false });
-        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true, secure: false });
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(200).json({ message: 'Login successful', token, refreshToken });
     } catch (error) {
