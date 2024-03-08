@@ -26,7 +26,7 @@ const clientSchema = new mongoose.Schema({
         type: Boolean
     },
     schoolGrade: {
-        type: String,
+        type: Number,
     }
 }, { discriminatorKey: 'role' });
 

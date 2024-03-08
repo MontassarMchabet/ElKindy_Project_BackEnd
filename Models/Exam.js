@@ -1,6 +1,6 @@
-const mongoose = require("mongoose"); // Erase if already required
+const mongoose = require("mongoose"); 
 
-// Declare the Schema of the Mongo model
+
 var examSchema = new mongoose.Schema(
   {
     title: {
@@ -17,6 +17,9 @@ var examSchema = new mongoose.Schema(
     pdfFile: {
       type: String
   },
+  schoolGrade: {
+    type: Number
+},
     type: {
         type: String,
         enum: ['revison', 'end of year exam', 'midterm exam'],
@@ -31,5 +34,4 @@ var examSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-//Export the model
 module.exports = mongoose.model("Exam", examSchema);

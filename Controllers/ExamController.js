@@ -1,17 +1,18 @@
 const Exam = require('../Models/Exam');
 const asyncHandler = require("express-async-handler");
 const axios = require("axios");
-
+const Client = require('../Models/Client');
 
 const createExam = asyncHandler(async (req, res) => {
   try {
-    const { title, description, type, format, pdfFile } = req.body;
+    const { title, description, type, format, pdfFile,schoolGrade } = req.body;
     const newExamData = {
       title,
       description,
       type,
       format,
       pdfFile: pdfFile || "",
+      schoolGrade,
     };
     const newExam = await Exam.create(newExamData);
     res.json(newExam);
@@ -21,9 +22,9 @@ const createExam = asyncHandler(async (req, res) => {
   }
 });
 
-
+///get exam by id
 const getExam = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.query;
     try {
       const findExam = await Exam.findById(id);
       res.json(findExam);
@@ -32,6 +33,7 @@ const getExam = asyncHandler(async (req, res) => {
     }
   });
 
+///Get all exams
   const getAllExam = asyncHandler(async (req, res) => {
     try {
       const findAllExam = await Exam.find();
@@ -62,10 +64,46 @@ const getExam = asyncHandler(async (req, res) => {
       }
       res.json(updatedExam);
     } catch (error) {
-      // Let asyncHandler handle the error
       throw new Error(error);
     }
   });
+
+
+
+  /// get exams of a spesific class
+const getExamsByClass = asyncHandler(async (req, res) => {
+  const { schoolGrade } = req.params;
+
+  try {
+    const exams = await Exam.find({ schoolGrade: schoolGrade });
+    res.json(exams);
+  } catch (error) {
+    console.error("Error getting exams by class:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+  /// get exams for the client
+const getExamsByClientGrade = asyncHandler(async (req, res) => {
+  const { schoolGrade } = req.params;
+
+  try {
+
+    const client = await Client.findById(req.user.id); 
+
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+
+    const exams = await Exam.find({ schoolGrade: client.schoolGrade });
+
+    res.json(exams);
+  } catch (error) {
+    console.error("Error getting exams by client grade:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 module.exports = {
     createExam,
@@ -73,4 +111,6 @@ module.exports = {
     getAllExam,
     deleteExam,
     updateExam,
+    getExamsByClass,
+    getExamsByClientGrade,
 };
