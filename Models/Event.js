@@ -13,9 +13,14 @@ const eventSchema = mongoose.Schema(
         imageUrl: {
              type: String 
         },
-        date: {
+        startDate: {
             type: Date,
             required: true
+            
+        },
+        endDate: {
+            type: Date,
+            //required: true
             
         },
         location: {
