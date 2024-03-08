@@ -25,8 +25,9 @@ const clientSchema = new mongoose.Schema({
     isSubscribed: {
         type: Boolean
     },
-    schoolGrade: {
+    level: {
         type: String,
+        enum: ['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année']
     }
 }, { discriminatorKey: 'role' });
 
