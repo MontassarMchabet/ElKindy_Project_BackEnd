@@ -1,14 +1,25 @@
 pipeline{
     agent any
+    tools{
+        nodejs '21.6.2'
+    }
+
     stages {
         stage('Install dependencies') {
             steps{
                 script {
-                    sh('npm install')
+                    try {
+                        sh('npm install')
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to install dependencies: ${err}")
+                    }
+
                 }
             }
         }
         stage('Unit Test') {
+
             steps{
                 script{
                     try {
@@ -38,14 +49,17 @@ pipeline{
         }
 
         stage('Build application') {
+
             steps{
                 script {
                     try {
-                        echo 'This is a BUILDING stage for unit tests.'
+                        echo 'This is a testing stage for build application.'
+
                     } catch (err) {
                         currentBuild.result = 'FAILURE'
                         error("Failed to build application: ${err}")
                     }
+
                 }
             }
         }

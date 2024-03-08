@@ -4,6 +4,15 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../Models/Admin');
 const Prof = require('../Models/Prof');
 const Client = require('../Models/Client');
+const validateMongoDbId = require('../Helpers/ValidateID');
+const crypto = require('crypto');
+const sendEmail = require('../Controllers/NodeMailer');
+const fs = require('fs');
+const path = require('path');
+const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
+const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
+const filePathThree = path.join(__dirname, '..', 'EmailTemplate', 'SendVerificationCode.html');
+
 
 const checkCINAdminProf = async (req, res) => {
     try {
@@ -59,7 +68,9 @@ const checkUsername = async (req, res) => {
                 fatherOccupation: existingUserUsername.fatherOccupation,
                 motherOccupation: existingUserUsername.motherOccupation,
                 isSubscribed: existingUserUsername.isSubscribed,
-                schoolGrade: existingUserUsername.schoolGrade,
+
+                level: existingUserUsername.level,
+
             });
         }
         res.json({ exists: false });
@@ -95,7 +106,9 @@ const checkEmail = async (req, res) => {
                 fatherOccupation: existingUserEmail.fatherOccupation,
                 motherOccupation: existingUserEmail.motherOccupation,
                 isSubscribed: existingUserEmail.isSubscribed,
-                schoolGrade: existingUserEmail.schoolGrade,
+
+                level: existingUserEmail.level,
+
             });
         }
         res.json({ exists: false });
@@ -139,19 +152,84 @@ const register = async (req, res) => {
             role: 'client',
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ message: 'Client registered successfully', token });
+
+        const payloadOne = {
+            userId: newClient._id,
+            role: newClient.role
+        };
+
+        const token = jwt.sign(payloadOne, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadOne, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
+        res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering Client' });
     }
 };
 
+
+const hashVerificationCode = async (req, res) => {
+    try {
+        let { verificationCode } = req.body;
+        if (typeof verificationCode !== 'string') {
+            verificationCode = String(verificationCode);
+        }
+        const hashedCode = await bcrypt.hash(verificationCode, 10);
+        res.status(200).json({ hashedCode });
+    } catch (error) {
+        console.error('Error hashing verification code:', error);
+        res.status(500).json({ message: 'Error hashing verification code' });
+    }
+}
+
+const compareVerificationCode = async (req, res) => {
+    try {
+        const { code, hashedVerificationCode } = req.body;
+        const isMatch = await bcrypt.compare(code, hashedVerificationCode);
+        res.status(200).json({ isMatch });
+    } catch (error) {
+        console.error('Error comparing verification code:', error);
+        res.status(500).json({ message: 'Error comparing verification code' });
+    }
+}
+
+const sendVerificationCode = async (req, res) => {
+    const { email, username } = req.body;
+    try {
+        const generatedCode = Math.floor(10000 + Math.random() * 90000);
+        const htmlTemplate = fs.readFileSync(filePathThree, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ email }}', email)
+            .replace('{{ username }}', username)
+            .replace('{{ verificationCode }}', generatedCode);
+        const data = {
+            to: email,
+            subject: "Hi there! Verify your email address!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
+        res.status(200).json({ message: 'Verification code sent successfully', verificationCode: generatedCode });
+    } catch (error) {
+        console.error('Error sending verification code:', error);
+        res.status(500).json({ message: 'Error sending verification code' });
+    }
+}
+
+
+
 const registerClient = async (req, res) => {
     try {
         const { name, lastname, email, password, username, dateOfBirth, profilePicture,
             parentCinNumber, parentPhoneNumber, instrument, otherInstruments, fatherOccupation, motherOccupation,
-            schoolGrade } = req.body;
+
+            level, verificationCode } = req.body;
+
 
         if (!name || !lastname || !email || !password || !username) {
             return res.status(400).json({ message: 'All fields are required.' });
@@ -172,6 +250,9 @@ const registerClient = async (req, res) => {
             return res.status(400).json({ message: 'Username already taken.' });
         }
 
+
+
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newClient = new Client({
             name,
@@ -181,7 +262,8 @@ const registerClient = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
+
             role: 'client',
 
 
@@ -192,11 +274,24 @@ const registerClient = async (req, res) => {
             fatherOccupation: fatherOccupation ? fatherOccupation : "",
             motherOccupation: motherOccupation ? motherOccupation : "",
             isSubscribed: false,
-            schoolGrade: schoolGrade ? schoolGrade : "",
+            level: level ? level : "",
         });
         await newClient.save();
-        const token = jwt.sign({ userId: newClient._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ message: 'Client registered successfully', token, username: newClient.username });
+
+
+        const payloadClient = {
+            userId: newClient._id,
+            role: newClient.role
+        };
+
+        const token = jwt.sign(payloadClient, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadClient, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
+        res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering Client' });
@@ -257,8 +352,33 @@ const registerAdmin = async (req, res) => {
             phoneNumber,
         });
         await newAdmin.save();
-        const token = jwt.sign({ userId: newAdmin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ message: 'Admin registered successfully', token, username: newAdmin.username });
+
+        const htmlTemplate = fs.readFileSync(filePathTwo, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ username }}', username)
+            .replace('{{ email }}', email)
+            .replace('{{ password }}', password);
+
+        const data = {
+            to: newAdmin.email,
+            subject: "Hi there! Welcome to Elkindy!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
+        const payloadAdmin = {
+            userId: newAdmin._id,
+            role: newAdmin.role
+        };
+
+        const token = jwt.sign(payloadAdmin, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadAdmin, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
+        res.status(201).json({ message: 'Admin registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering admin' });
@@ -319,10 +439,34 @@ const registerProf = async (req, res) => {
             phoneNumber,
         });
         await newProf.save();
-        const token = jwt.sign({ userId: newProf._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        const htmlTemplate = fs.readFileSync(filePathTwo, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ username }}', username)
+            .replace('{{ email }}', email)
+            .replace('{{ password }}', password);
+
+        const data = {
+            to: newProf.email,
+            subject: "Hi there! Welcome to Elkindy!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
 
 
-        res.status(201).json({ message: 'Prof registered successfully', token, username: newProf.username });
+        const payloadProf = {
+            userId: newProf._id,
+            role: newProf.role
+        };
+
+        const token = jwt.sign(payloadProf, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payloadProf, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
+        res.status(201).json({ message: 'Prof registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering prof' });
@@ -345,8 +489,19 @@ const loginWithEmail = async (req, res) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(200).json({ message: 'Login successful', token, username: user.username });
+        const payload = {
+            userId: user._id,
+            role: user.role
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.cookie('token', token, { domain: 'localhost', path: '/', httpOnly: true });
+        res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
+
+        res.status(200).json({ message: 'Login successful', token, refreshToken });
+
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -368,9 +523,16 @@ const loginWithUsername = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid password' });
         }
+        const payload = {
+            userId: user._id,
+            role: user.role
+        };
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(200).json({ message: 'Login successful', token, username: user.username });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
+        const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+
+        res.status(200).json({ message: 'Login successful', token, refreshToken });
+
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -426,10 +588,225 @@ const getAllProfs = async (req, res) => {
     }
 };
 
+const editAdminProf = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { name, lastname, email, username, password, dateOfBirth, role,
+            phoneNumber, cinNumber, profilePicture
+        } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (name) {
+            user.name = name;
+        }
+        if (lastname) {
+            user.lastname = lastname;
+        }
+        if (email) {
+            user.email = email;
+        }
+        if (username) {
+            user.username = username;
+        }
+        if (dateOfBirth) {
+            user.dateOfBirth = dateOfBirth;
+        }
+        if (phoneNumber) {
+            user.phoneNumber = phoneNumber;
+        }
+        if (cinNumber) {
+            user.cinNumber = cinNumber;
+        }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.password = hashedPassword;
+        }
+        if (profilePicture) {
+            user.profilePicture = profilePicture;
+        }
+        await user.save();
+
+        res.status(200).json({ message: 'User profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ message: 'Error updating user profile' });
+    }
+};
+
+
+const editClient = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
+            parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
+            fatherOccupation, motherOccupation, isSubscribed, level
+        } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (name) {
+            user.name = name;
+        }
+        if (lastname) {
+            user.lastname = lastname;
+        }
+        if (email) {
+            user.email = email;
+        }
+        if (username) {
+            user.username = username;
+        }
+        if (dateOfBirth) {
+            user.dateOfBirth = dateOfBirth;
+        }
+        if (role) {
+            user.role = role;
+        }
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.password = hashedPassword;
+        }
+        if (profilePicture) {
+            user.profilePicture = profilePicture;
+        }
+
+        if (parentCinNumber) {
+            user.parentCinNumber = parentCinNumber;
+        }
+        if (instrument) {
+            user.instrument = instrument;
+        }
+        if (otherInstruments) {
+            user.otherInstruments = otherInstruments;
+        }
+        if (fatherOccupation) {
+            user.fatherOccupation = fatherOccupation;
+        }
+        if (motherOccupation) {
+            user.motherOccupation = motherOccupation;
+        }
+        if (level) {
+            user.level = level;
+        }
+        if (isSubscribed) {
+            user.isSubscribed = isSubscribed;
+        }
+        if (parentPhoneNumber) {
+            user.parentPhoneNumber = parentPhoneNumber;
+        }
+
+        await user.save();
+
+        res.status(200).json({ message: 'User profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ message: 'Error updating user profile' });
+    }
+};
+
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
+
+const updatePassword = async (req, res) => {
+    const { _id } = req.user;
+    const { password } = req.body;
+    validateMongoDbId(_id);
+    const user = await User.findById(_id);
+    if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        const updatedUser = await user.save();
+        res.json(updatedUser);
+    } else {
+        res.json(user);
+    }
+}
+
+const forgotPasswordToken = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    } else {
+        try {
+            const token = await user.createPasswordResetToken();
+            await user.save();
+
+            const htmlTemplate = fs.readFileSync(filePath, 'utf8');
+
+            const resetURL = `http://localhost:3000/elkindy#/passwordReset/${token}`;
+            const emailContent = htmlTemplate
+                .replace('{{ username }}', user.username)
+                .replace('{{ resetURL }}', resetURL);
+
+            const data = {
+                to: user.email,
+                subject: "Password reset",
+                html: emailContent
+            };
+            await sendEmail(data, req, res);
+            res.status(200).json({ message: "Password reset token sent successfully" });
+        } catch (error) {
+            console.error('Error sending password reset token:', error);
+            res.status(500).json({ message: 'Error sending password reset token' });
+        }
+    }
+}
+
+const resetPassword = async (req, res) => {
+    const { password } = req.body;
+    const resetToken = req.params.token;
+    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const user = await User.findOne({
+        passwordResetToken: resetPasswordToken,
+        passwordResetExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return res.status(400).json({ message: "Invalid token" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpire = undefined;
+    await user.save();
+    res.status(200).json({ message: "Password reset successfully" });
+}
+
+
+
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
     loginWithEmail, loginWithUsername,
     deleteUser,
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
-    getAllAdmins, getAllClients, getAllProfs
+
+    getAllAdmins, getAllClients, getAllProfs,
+    editAdminProf, editClient,
+    getUserById,
+    resetPassword, forgotPasswordToken, updatePassword,
+    sendVerificationCode, hashVerificationCode, compareVerificationCode
+
 }
