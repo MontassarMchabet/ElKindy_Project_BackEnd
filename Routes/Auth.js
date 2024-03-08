@@ -6,7 +6,6 @@ const VerifyRefreshToken = require('../Helpers/RefreshTokenEndpoint')
 const { authMiddleware, adminMiddleware } = require('../Middleware/Authorization');
 
 
-//registering
 router.post('/register', AuthController.registerClient)
 router.post('/registerClient', AuthController.registerClient)
 router.post('/registerAdmin', AuthController.registerAdmin)
@@ -25,10 +24,12 @@ router.get('/check/username/:username', AuthController.checkUsername)
 router.get('/check/cin/:cinNumber', AuthController.checkCINAdminProf)
 router.get('/check/phone/:phoneNumber', AuthController.checkPhoneAdminProf)
 
+
 //get => affichage
 router.get('/admins', AuthController.getAllAdmins)
 router.get('/clients', AuthController.getAllClients)
 router.get('/profs', AuthController.getAllProfs)
+
 
 //verify the refresh token
 router.post('/refreshtoken', VerifyRefreshToken)

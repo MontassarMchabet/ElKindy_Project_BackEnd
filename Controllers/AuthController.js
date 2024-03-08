@@ -13,6 +13,7 @@ const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
 const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
 const filePathThree = path.join(__dirname, '..', 'EmailTemplate', 'SendVerificationCode.html');
 
+
 const checkCINAdminProf = async (req, res) => {
     try {
         const existingAdminCin = await Admin.findOne({ cinNumber: req.params.cinNumber });
@@ -67,7 +68,7 @@ const checkUsername = async (req, res) => {
                 fatherOccupation: existingUserUsername.fatherOccupation,
                 motherOccupation: existingUserUsername.motherOccupation,
                 isSubscribed: existingUserUsername.isSubscribed,
-                schoolGrade: existingUserUsername.schoolGrade,
+                level: existingUserUsername.level,
             });
         }
         res.json({ exists: false });
@@ -103,7 +104,7 @@ const checkEmail = async (req, res) => {
                 fatherOccupation: existingUserEmail.fatherOccupation,
                 motherOccupation: existingUserEmail.motherOccupation,
                 isSubscribed: existingUserEmail.isSubscribed,
-                schoolGrade: existingUserEmail.schoolGrade,
+                level: existingUserEmail.level,
             });
         }
         res.json({ exists: false });
@@ -160,11 +161,13 @@ const register = async (req, res) => {
         res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering Client' });
     }
 };
+
 
 const hashVerificationCode = async (req, res) => {
     try {
@@ -219,7 +222,8 @@ const registerClient = async (req, res) => {
     try {
         const { name, lastname, email, password, username, dateOfBirth, profilePicture,
             parentCinNumber, parentPhoneNumber, instrument, otherInstruments, fatherOccupation, motherOccupation,
-            schoolGrade, verificationCode } = req.body;
+
+            level, verificationCode } = req.body;
 
         if (!name || !lastname || !email || !password || !username) {
             return res.status(400).json({ message: 'All fields are required.' });
@@ -239,7 +243,6 @@ const registerClient = async (req, res) => {
         if (existingClientUsername) {
             return res.status(400).json({ message: 'Username already taken.' });
         }
-
 
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -262,9 +265,10 @@ const registerClient = async (req, res) => {
             fatherOccupation: fatherOccupation ? fatherOccupation : "",
             motherOccupation: motherOccupation ? motherOccupation : "",
             isSubscribed: false,
-            schoolGrade: schoolGrade ? schoolGrade : "",
+            level: level ? level : "",
         });
         await newClient.save();
+
 
         const payloadClient = {
             userId: newClient._id,
@@ -278,6 +282,7 @@ const registerClient = async (req, res) => {
         res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(201).json({ message: 'Client registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering Client' });
@@ -506,7 +511,6 @@ const loginWithUsername = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid password' });
         }
-
         const payload = {
             userId: user._id,
             role: user.role
@@ -571,7 +575,6 @@ const getAllProfs = async (req, res) => {
     }
 };
 
-
 const editAdminProf = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -626,7 +629,7 @@ const editClient = async (req, res) => {
         const userId = req.params.id;
         const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
             parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
-            fatherOccupation, motherOccupation, isSubscribed, schoolGrade
+            fatherOccupation, motherOccupation, isSubscribed, level
         } = req.body;
 
         const user = await User.findById(userId);
@@ -675,8 +678,8 @@ const editClient = async (req, res) => {
         if (motherOccupation) {
             user.motherOccupation = motherOccupation;
         }
-        if (schoolGrade) {
-            user.schoolGrade = schoolGrade;
+        if (level) {
+            user.level = level;
         }
         if (isSubscribed) {
             user.isSubscribed = isSubscribed;
