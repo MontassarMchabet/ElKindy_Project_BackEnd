@@ -17,6 +17,7 @@ pipeline{
             }
         }
         stage('Unit Test') {
+
             steps{
                 script{
                     try {
@@ -29,6 +30,7 @@ pipeline{
             }
         }
         stage('Build application') {
+
             steps{
                 script {
                     try {
