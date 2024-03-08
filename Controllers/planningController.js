@@ -1,6 +1,6 @@
 const Planning = require('../models/Planning');
 const Room = require('../Models/Room');
-const User = require('../models/UsersP');
+const User = require('../Models/User');
 const validatePlanning = require('./validatePlanning');
 //////////////////////// create ///////////////////
 
