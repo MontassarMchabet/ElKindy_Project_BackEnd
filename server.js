@@ -1,5 +1,10 @@
 const express = require("express")
 const authRouter = require('./Routes/Auth');
+const planningRouter = require('./routes/planningRoutes');
+const CourseRouter = require('./Routes/CourseRoutes');
+const RoomRouter = require('./Routes/RoomRoutes');
+var cors = require('cors')
+
 const eventRouter = require('./Routes/Event');
 const commentRouter = require('./Routes/Comment');
 const ticketRouter = require('./Routes/Ticket');
@@ -20,6 +25,9 @@ app.use(cors());
 
 app.use(express.json());
 app.use('/api/auth', authRouter);
+app.use('/api/plannings', planningRouter);
+app.use('/api/Course', CourseRouter);
+app.use('/api/Room', RoomRouter);
 
 app.use('/event', eventRouter);
 app.use('/comment', commentRouter);

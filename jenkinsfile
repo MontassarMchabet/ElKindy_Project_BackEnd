@@ -17,6 +17,11 @@ pipeline{
             }
         }
         stage('Unit Test') {
+<<<<<<< HEAD
+            steps {
+                script {
+                    echo 'This is a testing stage for unit tests.'
+=======
 
             steps{
                 script{
@@ -26,10 +31,16 @@ pipeline{
                         currentBuild.result = 'FAILURE'
                         error("Unit tests failed: ${err}")
                     }
+>>>>>>> a07d3c8b5f7f8dc490bd518f3f5f0b38bb7efefe
                 }
             }
         }
         stage('Build application') {
+<<<<<<< HEAD
+            steps {
+                script {
+                    echo 'This is a testing stage for building the application.'
+=======
 
             steps{
                 script {
@@ -39,6 +50,7 @@ pipeline{
                         currentBuild.result = 'FAILURE'
                         error("Failed to build application: ${err}")
                     }
+>>>>>>> a07d3c8b5f7f8dc490bd518f3f5f0b38bb7efefe
                 }
             }
         }
