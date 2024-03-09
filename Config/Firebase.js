@@ -10,3 +10,4 @@ const firebaseConfig = {
 const app = admin.initializeApp(firebaseConfig, 'elkindy');
 
 module.exports = app;
+

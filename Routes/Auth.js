@@ -19,13 +19,16 @@ router.post('/loginUsername', AuthController.loginWithUsername)
 router.delete('/deleteUser/:id', authMiddleware, adminMiddleware, AuthController.deleteUser)
 
 //check
+
 router.get('/check/email/:email', AuthController.checkEmail)
 router.get('/check/username/:username', AuthController.checkUsername)
 router.get('/check/cin/:cinNumber', AuthController.checkCINAdminProf)
 router.get('/check/phone/:phoneNumber', AuthController.checkPhoneAdminProf)
 
 
+
 //get => affichage
+
 router.get('/admins', AuthController.getAllAdmins)
 router.get('/clients', AuthController.getAllClients)
 router.get('/profs', AuthController.getAllProfs)

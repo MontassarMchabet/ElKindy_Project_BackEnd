@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
+
 const crypto = require('crypto');
+
 
 const userSchema = mongoose.Schema(
     {
@@ -48,9 +50,11 @@ const userSchema = mongoose.Schema(
         },
         passwordResetExpire: {
             type: Date,
+
         }
     }
 )
+
 
 userSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(60).toString('hex');
@@ -58,7 +62,6 @@ userSchema.methods.createPasswordResetToken = function () {
     this.passwordResetExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
     return resetToken;
 };
-
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;

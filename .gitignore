@@ -1,4 +1,3 @@
-
 # command bch neecleari l cashe => "git rm -rf --cached ."
 
 # Ignore node_modules directory
