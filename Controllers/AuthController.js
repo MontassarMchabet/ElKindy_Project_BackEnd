@@ -68,7 +68,9 @@ const checkUsername = async (req, res) => {
                 fatherOccupation: existingUserUsername.fatherOccupation,
                 motherOccupation: existingUserUsername.motherOccupation,
                 isSubscribed: existingUserUsername.isSubscribed,
+
                 level: existingUserUsername.level,
+
             });
         }
         res.json({ exists: false });
@@ -104,7 +106,9 @@ const checkEmail = async (req, res) => {
                 fatherOccupation: existingUserEmail.fatherOccupation,
                 motherOccupation: existingUserEmail.motherOccupation,
                 isSubscribed: existingUserEmail.isSubscribed,
+
                 level: existingUserEmail.level,
+
             });
         }
         res.json({ exists: false });
@@ -218,12 +222,14 @@ const sendVerificationCode = async (req, res) => {
 }
 
 
+
 const registerClient = async (req, res) => {
     try {
         const { name, lastname, email, password, username, dateOfBirth, profilePicture,
             parentCinNumber, parentPhoneNumber, instrument, otherInstruments, fatherOccupation, motherOccupation,
 
             level, verificationCode } = req.body;
+
 
         if (!name || !lastname || !email || !password || !username) {
             return res.status(400).json({ message: 'All fields are required.' });
@@ -245,6 +251,8 @@ const registerClient = async (req, res) => {
         }
 
 
+
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newClient = new Client({
             name,
@@ -255,6 +263,7 @@ const registerClient = async (req, res) => {
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
             isEmailVerified: true,
+
             role: 'client',
 
 
@@ -335,7 +344,7 @@ const registerAdmin = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'admin',
 
 
@@ -369,6 +378,7 @@ const registerAdmin = async (req, res) => {
         res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(201).json({ message: 'Admin registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering admin' });
@@ -421,7 +431,7 @@ const registerProf = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'prof',
 
 
@@ -456,6 +466,7 @@ const registerProf = async (req, res) => {
         res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(201).json({ message: 'Prof registered successfully', token, refreshToken });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Error registering prof' });
@@ -490,6 +501,7 @@ const loginWithEmail = async (req, res) => {
         res.cookie('refreshToken', refreshToken, { domain: 'localhost', path: '/', httpOnly: true });
 
         res.status(200).json({ message: 'Login successful', token, refreshToken });
+
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -520,6 +532,7 @@ const loginWithUsername = async (req, res) => {
         const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
         res.status(200).json({ message: 'Login successful', token, refreshToken });
+
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Error logging in' });
@@ -789,9 +802,11 @@ module.exports = {
     loginWithEmail, loginWithUsername,
     deleteUser,
     checkEmail, checkUsername, checkCINAdminProf, checkPhoneAdminProf,
+
     getAllAdmins, getAllClients, getAllProfs,
     editAdminProf, editClient,
     getUserById,
     resetPassword, forgotPasswordToken, updatePassword,
     sendVerificationCode, hashVerificationCode, compareVerificationCode
+
 }
