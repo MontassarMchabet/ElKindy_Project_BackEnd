@@ -344,7 +344,7 @@ const registerAdmin = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'admin',
 
 
@@ -431,7 +431,7 @@ const registerProf = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'prof',
 
 
