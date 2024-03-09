@@ -2,7 +2,6 @@ const express = require("express")
 const authRouter = require('./Routes/Auth');
 
 const product = require('./Routes/Product');
-const connectdb = require('./Config/db');
 
 const UploadImage = require('./Controllers/UploadImage');
 const connectdb = require('./Config/db');
