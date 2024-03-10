@@ -11,7 +11,8 @@ const {createExam, getExam, getAllExam, deleteExam, updateExam, getExamsByClass,
   router.delete("/:id", deleteExam);
   router.put("/:id", updateExam);
 
-  router.get("/byclass/:schoolGrade", getExamsByClass);
+  router.get("/byclass/:level", getExamsByClass);
+
   router.get("/:schoolGrade", getExamsByClientGrade);
 
 
