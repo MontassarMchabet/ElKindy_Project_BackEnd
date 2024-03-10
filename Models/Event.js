@@ -47,6 +47,15 @@ const eventSchema = mongoose.Schema(
              required: true 
         },
         room_distributionSeats: [{ type: String }] // You can adjust the type according to the seat distribution structure
+        ,
+        tickets: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Ticket'
+        }],
+        comments: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Comment'
+        }]
     }
 
     
