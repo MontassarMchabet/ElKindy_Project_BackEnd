@@ -77,7 +77,7 @@ pipeline{
         stage('Building images (node and mongo)') {
 steps{
 script {
-    sh 'sudo chmod 777 /var/run/docker.sock'
+    sh 'echo "0000" | sudo -S chmod 777 /var/run/docker.sock'
 sh 'docker build -t 192.168.33.10:8083/nodemongoapp:6.0 ./dockerfile'
 }
 }
