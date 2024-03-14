@@ -11,6 +11,11 @@ var examSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    prof: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "prof",
+      required: false,
+    },
     endAt: {
         type: Date,
     },

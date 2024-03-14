@@ -2,10 +2,11 @@ const Exam = require('../Models/Exam');
 const asyncHandler = require("express-async-handler");
 const axios = require("axios");
 const Client = require('../Models/Client');
+const Prof = require('../Models/Prof')
 
 const createExam = asyncHandler(async (req, res) => {
   try {
-    const { title, description, type, format, pdfFile,level } = req.body;
+    const { title, description, type, format, pdfFile,level,prof } = req.body;
     const newExamData = {
       title,
       description,
@@ -13,6 +14,7 @@ const createExam = asyncHandler(async (req, res) => {
       format,
       pdfFile: pdfFile || "",
       level,
+      prof,
     };
     const newExam = await Exam.create(newExamData);
     res.json(newExam);
@@ -24,14 +26,20 @@ const createExam = asyncHandler(async (req, res) => {
 
 ///get exam by id
 const getExam = asyncHandler(async (req, res) => {
-    const { id } = req.query;
-    try {
-      const findExam = await Exam.findById(id);
+  try {
+      console.log('Request parameters:', req.params); 
+      const { id } = req.params; 
+      const findExam = await Exam.findById(id); 
+      if (!findExam) {
+          return res.status(404).json({ message: 'Exam not found' });
+      }
       res.json(findExam);
-    } catch (error) {
-      throw new Error(error);
-    }
-  });
+  } catch (error) {
+      console.error('Error fetching exam:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 ///Get all exams
   const getAllExam = asyncHandler(async (req, res) => {
@@ -42,6 +50,20 @@ const getExam = asyncHandler(async (req, res) => {
       throw new Error(error);
     }
   });
+
+  const getExamsByProfId = asyncHandler(async (req, res) => {
+    try {
+        const professorId = req.params.profId;
+
+        
+        const exams = await Exam.find({ prof: professorId });
+
+        res.json(exams);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
 
   const deleteExam = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -123,4 +145,5 @@ module.exports = {
     updateExam,
     getExamsByClass,
     getExamsByClientGrade,
+    getExamsByProfId,
 };
