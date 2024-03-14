@@ -19,7 +19,6 @@ router.post('/loginUsername', AuthController.loginWithUsername)
 router.delete('/deleteUser/:id', authMiddleware, adminMiddleware, AuthController.deleteUser)
 
 //check
-
 router.get('/check/email/:email', AuthController.checkEmail)
 router.get('/check/username/:username', AuthController.checkUsername)
 router.get('/check/cin/:cinNumber', AuthController.checkCINAdminProf)
@@ -46,7 +45,7 @@ router.get('/user/:id', AuthController.getUserById)
 
 // password reset
 router.post('/forgotpasswordtoken', AuthController.forgotPasswordToken)
-router.put('/passwordReset', authMiddleware, AuthController.updatePassword)
+router.put('/passwordReset', AuthController.updatePassword)
 router.put('/passwordReset/:token', AuthController.resetPassword)
 
 
