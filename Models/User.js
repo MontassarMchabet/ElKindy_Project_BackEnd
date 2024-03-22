@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const crypto = require('crypto');
 
 
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -51,17 +51,21 @@ const userSchema = mongoose.Schema(
         passwordResetExpire: {
             type: Date,
 
+        },
+         level: {
+            type: String,
+            enum: ['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année'],
+            required: true
         }
     }
-)
+);
 
 
+const User = mongoose.model('User', userSchema);
+module.exports = User;
 userSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(60).toString('hex');
     this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     this.passwordResetExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
     return resetToken;
 };
-
-const User = mongoose.model('User', userSchema);
-module.exports = User;

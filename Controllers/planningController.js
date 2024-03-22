@@ -1,29 +1,43 @@
-const Planning = require('../models/Planning');
+const Planning = require('../Models/Planning');
 const Room = require('../Models/Room');
 const User = require('../Models/User');
 const validatePlanning = require('./validatePlanning');
 //////////////////////// create ///////////////////
 
-const isRoomAvailable = async (roomId, date, startTime, endTime) => {
-    const existingPlanningInRoom = await Planning.findOne({
-        roomId,
-        date,
-        $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
-        ]
-    });
-    return !existingPlanningInRoom;
-};
+const isRoomAvailable = async (req, res) => {
+    try {
+        const { roomId, date, startTime, endTime } = req.params;
 
-const areStudentsAvailable = async (studentIds, date, startTime, endTime) => {
+        // Recherchez les plannings existants dans la salle pour la date et l'heure spécifiées
+        const existingPlanningInRoom = await Planning.findOne({
+            roomId,
+            date,
+            $or: [
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+            ]
+        });
+
+        // Vérifiez si un planning existe dans la salle pour l'heure spécifiée
+        const isRoomAvailable = !existingPlanningInRoom;
+
+        // Envoyez la réponse appropriée en fonction de la disponibilité de la salle
+        res.json({ isRoomAvailable });
+    } catch (error) {
+        console.error('Error checking room availability:', error);
+        // Gérer les erreurs de requête en renvoyant une réponse avec un statut d'erreur
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+/* 
+const areStudentsAvailable = async (studentIds, date, startDate, endDate) => {
     for (const studentId of studentIds) {
         const existingPlanningForStudent = await Planning.findOne({
             date,
             studentIds: studentId,
             $or: [
-                { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-                { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
+                { startDate: { $lt: endDate }, endDate: { $gt: startDate } },
+                { startDate: { $eq: startDate }, endDate: { $eq: endDate } }
             ]
         });
         if (existingPlanningForStudent) {
@@ -31,50 +45,88 @@ const areStudentsAvailable = async (studentIds, date, startTime, endTime) => {
         }
     }
     return true;
+} */;
+const areStudentsAvailable = async (req, res) => {
+    try {
+        const { studentIds, date, startTime, endTime } = req.params;
+        const studentIdsArray = studentIds.split(',');
+        console.log(studentIdsArray);
+
+        for (const studentId of studentIdsArray) {
+            const existingPlanningForStudent = await Planning.findOne({
+                date,
+                studentIds: studentId,
+                $or: [
+                    { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                    { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+                ]
+            });
+            if (existingPlanningForStudent) {
+                return res.json({ areStudentsAvailable: false });
+            }
+        }
+        // Si aucune planification existante n'est trouvée pour aucun des étudiants
+        return res.json({ areStudentsAvailable: true });
+       
+    } catch (error) {
+        console.error('Error checking student availability:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
 };
 
-const isTeacherAvailable = async (teacherId, date, startTime, endTime) => {
-    const existingPlanningForTeacher = await Planning.findOne({
-        date,
-        teacherId,
-        $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
-        ]
-    });
-    return !existingPlanningForTeacher;
-};
 
+
+const isTeacherAvailable = async (req, res) => {
+    try {
+        const { teacherId, date, startTime, endTime } = req.params;
+        const existingPlanningForTeacher = await Planning.findOne({
+            date,
+            teacherId,
+            $or: [
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+            ]
+        });
+        
+        const isTeacherAvailable = !existingPlanningForTeacher;
+
+        // Envoyez la réponse appropriée en fonction de la disponibilité de la salle
+        res.json({ isTeacherAvailable });
+    } catch (error) {
+        console.error('Error checking teacher availability:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
 const createPlanning = async (req, res) => {
     const session = await Planning.startSession();
     session.startTransaction();
     try {
-        const { courseId, date, startTime, endTime, roomId, teacherId, studentIds } = req.body;
+        const { courseId, date, startDate, endDate, roomId, teacherId, studentIds } = req.body;
 
-        const isRoomAvailableResult = await isRoomAvailable(roomId, date, startTime, endTime);
+       /*  const isRoomAvailableResult = await isRoomAvailable(roomId, date, startDate, endDate);
         if (!isRoomAvailableResult) {
             return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
-        }
+        } */
 
-        const areStudentsAvailableResult = await areStudentsAvailable(studentIds, date, startTime, endTime);
+      /*   const areStudentsAvailableResult = await areStudentsAvailable(studentIds, date, startDate, endDate);
         if (!areStudentsAvailableResult) {
             return res.status(400).json({ message: "Certains étudiants sont déjà occupés à ce moment-là." });
-        }
+        } */
 
-        const isTeacherAvailableResult = await isTeacherAvailable(teacherId, date, startTime, endTime);
+        /* const isTeacherAvailableResult = await isTeacherAvailable(teacherId, date, startDate, endDate);
         if (!isTeacherAvailableResult) {
             return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
-        }
+        } */
          // Validation du nombre d'heures d'étude par semaine
-         const isValidPlanning = await validatePlanning(studentIds,courseId, date, startTime, endTime);
+        /*  const isValidPlanning = await validatePlanning(studentIds,courseId, date, startDate, endDate);
          if (!isValidPlanning) {
              return res.status(400).json({ message: "Le nombre d'heures d'étude par semaine est dépassé pour cet utilisateur." });
-         }
+         } */
         const newPlanning = new Planning({
             courseId,
             date,
-            startTime,
-            endTime,
+            startDate,
+            endDate,
             roomId,
             teacherId,
             studentIds
@@ -154,10 +206,10 @@ const updatePlanning = async (req, res) => {
         const { id } = req.params;
         
         // Validation des entrées (ajoutez votre logique ici)
-        const { courseId, date, startTime, endTime, roomId, teacherId, studentIds } = req.body;
+        const { courseId, date, startDate, endDate, roomId, teacherId, studentIds } = req.body;
 
         // Vérifier la disponibilité de la salle de cours
-        const isRoomAvailable = await isStudentsAndTeacherAvailable(roomId, date, startTime, endTime, studentIds, teacherId);
+        const isRoomAvailable = await isStudentsAndTeacherAvailable(roomId, date, startDate, endDate, studentIds, teacherId);
         if (!isRoomAvailable) {
             return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
         }
@@ -166,8 +218,8 @@ const updatePlanning = async (req, res) => {
         const updatedPlanning = await Planning.findByIdAndUpdate(id, {
             courseId,
             date,
-            startTime,
-            endTime,
+            startDate,
+            endDate,
             roomId,
             teacherId,
             studentIds
@@ -189,5 +241,9 @@ module.exports = {
     getAllPlannings,
     getPlanningById,
     deletePlanning,
-    updatePlanning
+    updatePlanning,
+    isRoomAvailable,
+    isTeacherAvailable,
+    areStudentsAvailable
+
 };

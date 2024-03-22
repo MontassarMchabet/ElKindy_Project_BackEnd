@@ -38,7 +38,7 @@ app.use('/api/image', UploadImage);
 
 
 
-app.use('/api/auth', authRouter);
+//app.use('/api/auth', authRouter);
 app.use('/api/plannings', planningRouter);
 app.use('/api/Course', CourseRouter);
 app.use('/api/Room', RoomRouter);
@@ -51,7 +51,7 @@ app.use('/api/product', product);
 
 
 
-app.use('/api/auth', authRouter);
+//app.use('/api/auth', authRouter);
 app.use('/api/image', UploadImage);
 
 
