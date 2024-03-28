@@ -54,28 +54,52 @@ async function getEventbyid(req, res) {
 //     console.error(error);
 //     res.status(500).json({ error: "Erreur serveur" });
 // }
-async function getEventTickets(req, res) {
+// async function getEventTickets(req, res) {
 
+//   try {
+//     const eventId = req.params.eventId;
+//     const tickets = await Ticket.find({ event: eventId });
+//     res.json(tickets);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erreur serveur" });
+//   }
+// }
+async function getEventTickets(req, res) {
   try {
     const eventId = req.params.eventId;
-    const tickets = await Ticket.find({ event: eventId });
+    const tickets = await Ticket.find({ event: eventId }).populate('user', 'username').populate('event', 'name');
+    // Le champ 'user' dans chaque ticket sera maintenant remplacé par l'objet complet de l'utilisateur, contenant uniquement le nom d'utilisateur.
+    // Le champ 'event' dans chaque ticket sera maintenant remplacé par l'objet complet de l'événement, contenant uniquement le titre.
     res.json(tickets);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
-async function getEventComments(req, res) {
+// async function getEventComments(req, res) {
 
+//   try {
+//     const eventId = req.params.eventId;
+//     const comments = await Comment.find({ event: eventId });
+//     res.json(comments);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erreur serveur" });
+//   }
+// }
+async function getEventComments(req, res) {
   try {
     const eventId = req.params.eventId;
-    const comments = await Comment.find({ event: eventId });
+    const comments = await Comment.find({ event: eventId }).populate('user', 'username profilePicture');
+    // Le champ 'user' dans chaque commentaire sera maintenant remplacé par l'objet complet de l'utilisateur, contenant uniquement le nom d'utilisateur et l'image.
     res.json(comments);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
+
 const deleteEvent = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
