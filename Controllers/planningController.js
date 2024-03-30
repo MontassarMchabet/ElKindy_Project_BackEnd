@@ -1,7 +1,5 @@
 const Planning = require('../Models/Planning');
-const Room = require('../Models/Room');
-const User = require('../Models/User');
-const validatePlanning = require('./validatePlanning');
+const mongoose = require('mongoose');
 //////////////////////// create ///////////////////
 
 const isRoomAvailable = async (req, res) => {
@@ -29,23 +27,7 @@ const isRoomAvailable = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-/* 
-const areStudentsAvailable = async (studentIds, date, startDate, endDate) => {
-    for (const studentId of studentIds) {
-        const existingPlanningForStudent = await Planning.findOne({
-            date,
-            studentIds: studentId,
-            $or: [
-                { startDate: { $lt: endDate }, endDate: { $gt: startDate } },
-                { startDate: { $eq: startDate }, endDate: { $eq: endDate } }
-            ]
-        });
-        if (existingPlanningForStudent) {
-            return false;
-        }
-    }
-    return true;
-} */;
+
 const areStudentsAvailable = async (req, res) => {
     try {
         const { studentIds, date, startTime, endTime } = req.params;
@@ -74,8 +56,6 @@ const areStudentsAvailable = async (req, res) => {
     }
 };
 
-
-
 const isTeacherAvailable = async (req, res) => {
     try {
         const { teacherId, date, startTime, endTime } = req.params;
@@ -98,52 +78,42 @@ const isTeacherAvailable = async (req, res) => {
     }
 };
 const createPlanning = async (req, res) => {
-    const session = await Planning.startSession();
-    session.startTransaction();
     try {
-        const { courseId, date, startDate, endDate, roomId, teacherId, studentIds } = req.body;
+        const {  date, startDate, endDate, roomId, teacherId, type,classroomId } = req.body;
+        let newPlanning;
 
-       /*  const isRoomAvailableResult = await isRoomAvailable(roomId, date, startDate, endDate);
-        if (!isRoomAvailableResult) {
-            return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
-        } */
+        if (type === "instrument") {
+            const { studentIds } = req.body;
+            newPlanning = new Planning({
+               
+                date,
+                startDate,
+                endDate,
+                type,
+                roomId,
+                teacherId,
+                studentIds,
+            });
+        };
+        if (type === "solfège")  {
+            newPlanning = new Planning({
+                
+                date,
+                startDate,
+                endDate,
+                type,
+                roomId,
+                teacherId,
+                classroomId,
+            });
+            
+        }
 
-      /*   const areStudentsAvailableResult = await areStudentsAvailable(studentIds, date, startDate, endDate);
-        if (!areStudentsAvailableResult) {
-            return res.status(400).json({ message: "Certains étudiants sont déjà occupés à ce moment-là." });
-        } */
-
-        /* const isTeacherAvailableResult = await isTeacherAvailable(teacherId, date, startDate, endDate);
-        if (!isTeacherAvailableResult) {
-            return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
-        } */
-         // Validation du nombre d'heures d'étude par semaine
-        /*  const isValidPlanning = await validatePlanning(studentIds,courseId, date, startDate, endDate);
-         if (!isValidPlanning) {
-             return res.status(400).json({ message: "Le nombre d'heures d'étude par semaine est dépassé pour cet utilisateur." });
-         } */
-        const newPlanning = new Planning({
-            courseId,
-            date,
-            startDate,
-            endDate,
-            roomId,
-            teacherId,
-            studentIds
-        });
-
-        // Sauvegarder le planning dans BD
-        const savedPlanning = await newPlanning.save({ session });
-
-        await session.commitTransaction();
-        session.endSession();
-
+        const savedPlanning = await newPlanning.save();
         res.status(201).json(savedPlanning);
     } catch (error) {
-        console.error("Erreur lors de la création du planning :", error);
-        await session.abortTransaction();
-        session.endSession();
-        res.status(500).json({ message: "Une erreur s'est produite lors de la création du planning." });
+        console.error("Error creating planning:", error);
+        res.status(500).json({ message: "An error occurred while creating the planning." });
     }
 };
 
@@ -205,25 +175,33 @@ const updatePlanning = async (req, res) => {
         // Récupérer l'ID du planning à mettre à jour à partir des paramètres de la requête
         const { id } = req.params;
         
-        // Validation des entrées (ajoutez votre logique ici)
-        const { courseId, date, startDate, endDate, roomId, teacherId, studentIds } = req.body;
+        const {  date, startDate, endDate, roomId, teacherId, type,classroomId } = req.body;
+        let updatedPlanning;
 
-        // Vérifier la disponibilité de la salle de cours
-        const isRoomAvailable = await isStudentsAndTeacherAvailable(roomId, date, startDate, endDate, studentIds, teacherId);
-        if (!isRoomAvailable) {
-            return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
+        if (type === "instrument") {
+            const { studentIds } = req.body;
+            updatedPlanning = await Planning.findByIdAndUpdate(id, {
+            
+                date,
+                startDate,
+                endDate,
+                roomId,
+                teacherId,
+                studentIds
+            }, { new: true });
+        };
+        if (type === "solfège")  {
+            updatedPlanning = await Planning.findByIdAndUpdate(id, {
+            
+                date,
+                startDate,
+                endDate,
+                roomId,
+                teacherId,
+                classroomId
+            }, { new: true });
+            
         }
-
-        // Mettre à jour le planning
-        const updatedPlanning = await Planning.findByIdAndUpdate(id, {
-            courseId,
-            date,
-            startDate,
-            endDate,
-            roomId,
-            teacherId,
-            studentIds
-        }, { new: true });
 
         // Vérifier si le planning a été trouvé et mis à jour
         if (!updatedPlanning) {
@@ -236,6 +214,28 @@ const updatePlanning = async (req, res) => {
         res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour du planning." });
     }
 };
+const getPlanningWithStudentIds = async (req, res) => {
+    try {
+        // Recherchez les plannings avec le champ studentIds
+        const planningsWithStudentIds = await Planning.find({ studentIds: { $exists: true } });
+
+        res.status(200).json(planningsWithStudentIds);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des plannings :", error);
+        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+    }
+};
+const getPlanningWithTeacherId = async (req, res) => {
+    try {
+        const { teacherId } = req.params;
+        const planningsWithTeacherId = await Planning.find({ teacherId: new mongoose.Types.ObjectId(teacherId)});
+
+        res.status(200).json(planningsWithTeacherId);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des plannings :", error);
+        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+    }
+};
 module.exports = {
     createPlanning,
     getAllPlannings,
@@ -244,6 +244,8 @@ module.exports = {
     updatePlanning,
     isRoomAvailable,
     isTeacherAvailable,
-    areStudentsAvailable
+    areStudentsAvailable,
+    getPlanningWithStudentIds,
+    getPlanningWithTeacherId
 
 };

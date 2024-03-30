@@ -8,6 +8,7 @@ const UploadImage = require('./Controllers/UploadImage');
 const planningRouter = require('./routes/planningRoutes');
 const CourseRouter = require('./Routes/CourseRoutes');
 const RoomRouter = require('./Routes/RoomRoutes');
+const classroomRoutes = require('./Routes/classroomRoutes');
 var cors = require('cors')
 
 const eventRouter = require('./Routes/Event');
@@ -42,7 +43,7 @@ app.use('/api/image', UploadImage);
 app.use('/api/plannings', planningRouter);
 app.use('/api/Course', CourseRouter);
 app.use('/api/Room', RoomRouter);
-
+app.use('/api/classroom', classroomRoutes);
 app.use('/event', eventRouter);
 app.use('/comment', commentRouter);
 app.use('/tickets', ticketRouter);
