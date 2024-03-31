@@ -6,7 +6,7 @@ const Prof = require('../Models/Prof')
 
 const createExam = asyncHandler(async (req, res) => {
   try {
-    const { title, description, type, format, pdfFile,level,prof } = req.body;
+    const { title, description, type, format, pdfFile,level,prof , endAt,quiz} = req.body;
     const newExamData = {
       title,
       description,
@@ -15,6 +15,8 @@ const createExam = asyncHandler(async (req, res) => {
       pdfFile: pdfFile || "",
       level,
       prof,
+      endAt,
+      quiz,
     };
     const newExam = await Exam.create(newExamData);
     res.json(newExam);
@@ -24,19 +26,18 @@ const createExam = asyncHandler(async (req, res) => {
   }
 });
 
-///get exam by id
 const getExam = asyncHandler(async (req, res) => {
   try {
-      console.log('Request parameters:', req.params); 
-      const { id } = req.params; 
-      const findExam = await Exam.findById(id); 
-      if (!findExam) {
-          return res.status(404).json({ message: 'Exam not found' });
-      }
-      res.json(findExam);
+    console.log('Request parameters:', req.params); 
+    const { id } = req.params; 
+    const findExam = await Exam.findById(id).populate('quiz'); // Populate the quiz field
+    if (!findExam) {
+      return res.status(404).json({ message: 'Exam not found' });
+    }
+    res.json(findExam);
   } catch (error) {
-      console.error('Error fetching exam:', error);
-      res.status(500).json({ message: 'Internal server error' });
+    console.error('Error fetching exam:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

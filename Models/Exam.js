@@ -16,8 +16,13 @@ var examSchema = new mongoose.Schema(
       ref: "prof",
       required: false,
     },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
     endAt: {
-        type: Date,
+      type: Date,
+      required: true // Adjust as per your requirement
     },
     pdfFile: {
       type: String
@@ -36,9 +41,12 @@ var examSchema = new mongoose.Schema(
         type: String,
         enum: ['pdf', 'quizz'],
         default: 'pdf'
-    }
+    },
+    quiz: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Quiz',
+  }
   },
-  { timestamps: true }
 );
 
 module.exports = mongoose.model("Exam", examSchema);

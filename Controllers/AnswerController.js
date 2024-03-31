@@ -46,21 +46,42 @@ const getAnswersByExamId = async (req, res) => {
         // Fetch all answers related to the exam
         const answers = await Answer.find({ exam: examId }).populate({
             path: 'client',
-            model: 'User', // Make sure this matches the model name for the "users" collection
-            select: 'name lastname email', // Optionally, select the fields you want to populate
+            model: 'User', 
+            select: 'name lastname email profilePicture', 
           });;
-// Assuming 'client' is the reference field in the answer model
 
-        // Send the answers as a response
+
         res.status(200).json(answers);
     } catch (error) {
         console.error('Error fetching answers by exam ID:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+const getAnswersByClientId = async (req, res) => {
+    try {
+        const { clientId } = req.params;
 
+        // Check if the client exists
+        const client = await Client.findById(clientId);
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        // Fetch answers related to the client ID
+        const answers = await Answer.find({ client: clientId }).populate({
+            path: 'client',
+            model: 'User', 
+            select: 'name lastname email',
+        });
+
+        res.status(200).json(answers);
+    } catch (error) {
+        console.error('Error fetching answers by client ID:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 
 module.exports = {
-    createAnswer, getAnswersByExamId,
+    createAnswer, getAnswersByExamId,getAnswersByClientId,
     
 };

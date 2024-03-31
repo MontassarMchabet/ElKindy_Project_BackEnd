@@ -4,7 +4,7 @@ const exam = require('./Routes/ExamR');
 const answer = require('./Routes/AnswerR');
 const note = require('./Routes/NoteR');
 const UploadImage = require('./Controllers/UploadImage');
-
+const quizz = require('./Routes/QuizR');
 const planningRouter = require('./routes/planningRoutes');
 const CourseRouter = require('./Routes/CourseRoutes');
 const RoomRouter = require('./Routes/RoomRoutes');
@@ -35,7 +35,7 @@ app.use('/api/exam', exam);
 app.use('/api/answer', answer);
 app.use('/api/note', note);
 app.use('/api/image', UploadImage);
-
+app.use('/api/quiz', quizz);
 
 
 app.use('/api/auth', authRouter);

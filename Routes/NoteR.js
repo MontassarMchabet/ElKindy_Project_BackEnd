@@ -31,4 +31,39 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+router.get('/byanswer/:answerId', async (req, res) => {
+  try {
+      // Find the note associated with the provided answer ID
+      const note = await Note.findOne({ answer: req.params.answerId });
+
+      if (!note) {
+          return res.status(404).json({ message: 'Note not found for the provided answer ID' });
+      }
+
+      res.json(note);
+  } catch (error) {
+      console.error('Error fetching note by answer ID:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+// Route to get notes of a certain client with answer and exam details
+router.get('/byclient/:clientId', async (req, res) => {
+  try {
+      const clientId = req.params.clientId;
+
+      // Find notes for the given client and populate the associated answer and exam details
+      const notes = await Note.find({ client: clientId })
+          .populate('answer')
+          .populate('exam')
+          .exec();
+
+      res.json(notes);
+  } catch (error) {
+      console.error('Error fetching notes for client:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;
