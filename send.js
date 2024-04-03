@@ -1,7 +1,7 @@
 // seed.js
 
 const mongoose = require('mongoose');
-const Course = require('./models/Course');
+const Course = require('./Models/Course');
 
 // Connectez-vous à votre base de données MongoDB
 mongoose.connect("mongodb+srv://nourbenaissa:eOzGcg6xlKBzMj7E@cluster0.ysfg0up.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {

@@ -1,3 +1,4 @@
+const decodeToken = require("../Helpers/DecodeToken");
 const Product = require("../Models/product");
 const User = require("../Models/User");
 const asyncHandler = require("express-async-handler");
@@ -16,7 +17,7 @@ const createProduct = asyncHandler(async (req, res) => {
 const getaProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
-    const findProduct = await Product.findById(id);
+    const findProduct = await Product.findById(id).populate("ratings.postedby")
     res.json(findProduct);
   } catch (error) {
     throw new Error(error);
@@ -142,37 +143,49 @@ const updateProduct = asyncHandler(async (req, res) => {
 });
 
 
+
 const addToWishlist = asyncHandler(async (req, res) => {
-  const userId = req.params.idUser;
+  const _id = req.params.idUser;
   const prodId = req.body;
-  console.log(userId);
+  console.log(_id);
   console.log(prodId);
   //console.log(req);
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(_id);
     const prodObjectId = new mongoose.Types.ObjectId(prodId.prodId);
     const alreadyAdded = user.wishlist.find(productId => productId.toString() === prodObjectId.toString());
     if (alreadyAdded) {
       await User.findByIdAndUpdate(
-        userId,
+        _id,
         { $pull: { wishlist: prodObjectId }, },
         { new: true, }
       );
     } else {
       await User.findByIdAndUpdate(
-        userId,
+        _id,
         { $push: { wishlist: prodObjectId } },
         { new: true }
       );
     }
     // Fetch user again to get the updated wishlist
-    const updatedUser = await User.findById(userId);
+    const updatedUser = await User.findById(_id);
     res.json(updatedUser);
   } catch (error) {
     console.error('Error adding to wishlist:', error);
     res.status(500).json({ message: 'Error adding to wishlist' });
   }
 });
+
+const getWishlist = asyncHandler(async (req, res) => {
+  const  _id  = req.params.idUser;
+  try {
+    const findUser = await User.findById(_id).populate("wishlist");
+    res.json(findUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 
 const rating = asyncHandler(async (req, res) => {
   const  _id  = req.params.idUser;
@@ -221,7 +234,7 @@ const rating = asyncHandler(async (req, res) => {
         totalrating: actualRating,
       },
       { new: true }
-    );
+    ).populate("ratings.postedby");
     res.json(finalproduct);
   } catch (error) {
     throw new Error(error);
@@ -237,4 +250,5 @@ module.exports = {
   getAllProduct,
   addToWishlist,
   rating,
+  getWishlist,
 };

@@ -4,6 +4,7 @@ const exam = require('./Routes/ExamR');
 const answer = require('./Routes/AnswerR');
 const note = require('./Routes/NoteR');
 const UploadImage = require('./Controllers/UploadImage');
+const connectdb = require('./Config/db');
 
 const planningRouter = require('./routes/planningRoutes');
 const CourseRouter = require('./Routes/CourseRoutes');
@@ -16,6 +17,9 @@ const ticketRouter = require('./Routes/Ticket');
 
 
 const product = require('./Routes/Product');
+const cupon = require('./Routes/Cupon');
+const cart = require('./Routes/Cart');
+const order = require('./Routes/Order');
 
 const cookieParser = require('cookie-parser');
 
@@ -47,6 +51,9 @@ app.use('/comment', commentRouter);
 app.use('/tickets', ticketRouter);
 
 app.use('/api/product', product);
+app.use('/api/cupon', cupon);
+app.use('/api/cart', cart);
+app.use('/api/order', order);
 
 
 

@@ -18,7 +18,7 @@ const getAllCoupons = asynHandler(async (req, res) => {
   }
 });
 const updateCoupon = asynHandler(async (req, res) => {
-  const  id  = req.params;
+  const  {id}  = req.params;
   try {
     const updatecoupon = await Coupon.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -29,7 +29,7 @@ const updateCoupon = asynHandler(async (req, res) => {
   }
 });
 const deleteCoupon = asynHandler(async (req, res) => {
-  const  id  = req.params;
+  const  {id}  = req.params;
   try {
     const deletecoupon = await Coupon.findByIdAndDelete(id);
     res.json(deletecoupon);
@@ -38,7 +38,7 @@ const deleteCoupon = asynHandler(async (req, res) => {
   }
 });
 const getCoupon = asynHandler(async (req, res) => {
-  const  id  = req.params;
+  const  {id}  = req.params;
   try {
     const getAcoupon = await Coupon.findById(id);
     res.json(getAcoupon);

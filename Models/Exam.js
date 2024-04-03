@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"); 
+const mongoose = require("mongoose");
 
 
 var examSchema = new mongoose.Schema(
@@ -12,23 +12,23 @@ var examSchema = new mongoose.Schema(
       required: true,
     },
     endAt: {
-        type: Date,
+      type: Date,
     },
     pdfFile: {
       type: String
-  },
-  schoolGrade: {
-    type: Number
-},
+    },
+    schoolGrade: {
+      type: Number
+    },
     type: {
-        type: String,
-        enum: ['revison', 'end of year exam', 'midterm exam'],
-        default: 'midterm exam'
+      type: String,
+      enum: ['revison', 'end of year exam', 'midterm exam'],
+      default: 'midterm exam'
     },
     format: {
-        type: String,
-        enum: ['pdf', 'quizz'],
-        default: 'pdf'
+      type: String,
+      enum: ['pdf', 'quizz'],
+      default: 'pdf'
     }
   },
   { timestamps: true }
