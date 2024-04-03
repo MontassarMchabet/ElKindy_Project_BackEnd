@@ -53,4 +53,37 @@ router.get('/quizzes/all', async (req, res) => {
     }
   });
   
+
+// Update a quiz
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedQuiz = await Quiz.findOneAndUpdate({ _id: id }, req.body, {
+      new: true,
+    });
+    if (!updatedQuiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    res.json(updatedQuiz);
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Find and delete the exam by ID
+    const deletedquiz= await Quiz.findByIdAndDelete(id);
+    if (!deletedquiz) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+    res.json({ message: 'Quiz deleted successfully' });
+  } catch (error) {
+    // Handle errors
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;

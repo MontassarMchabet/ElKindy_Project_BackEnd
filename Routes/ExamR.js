@@ -14,6 +14,6 @@ const {createExam, getExam, getAllExam, deleteExam, updateExam, getExamsByClass,
   router.get("/byclass/:level", getExamsByClass);
 
   router.get("/:schoolGrade", getExamsByClientGrade);
-  //router.get("/prof/:profId", getExamsByProf);
-  router.get('/byprof/:profId', getExamsByProfId);
+
+  router.get('/exams/prof', getExamsByProfId);
   module.exports = router

@@ -52,18 +52,6 @@ const getExam = asyncHandler(async (req, res) => {
     }
   });
 
-  const getExamsByProfId = asyncHandler(async (req, res) => {
-    try {
-        const professorId = req.params.profId;
-
-        
-        const exams = await Exam.find({ prof: professorId });
-
-        res.json(exams);
-    } catch (error) {
-        throw new Error(error);
-    }
-});
 
 
   const deleteExam = asyncHandler(async (req, res) => {
@@ -137,6 +125,26 @@ const getExamsByClientGrade = asyncHandler(async (req, res) => {
   }
 });
 
+const getExamsByProfId = asyncHandler(async (req, res) => {
+
+  try {
+    
+    const profe= await Prof.findById(req.user.id);
+
+   
+    if (!profe) {
+      return res.status(404).json({ message: "Professor not found" });
+    }
+
+    // Fetch exams associated with the professor
+    const exams = await Exam.find({ prof: profe._id });
+
+    res.json(exams);
+  } catch (error) {
+    console.error("Error getting exams by professor ID:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 module.exports = {
     createExam,

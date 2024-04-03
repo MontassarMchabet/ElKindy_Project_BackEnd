@@ -31,6 +31,27 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.post("/quiz/", async (req, res) => {
+  try {
+    const { quizz, client, content, score } = req.body;
+
+    const newNote = new Note({
+      quizz: quizz, 
+      client: client,
+      content: content,
+      score: score,
+    });
+
+    await newNote.save();
+
+    res.json({ success: true, message: "Score assigned successfully" });
+  } catch (error) {
+    console.error("Error assigning score:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+
 
 router.get('/byanswer/:answerId', async (req, res) => {
   try {
@@ -57,12 +78,32 @@ router.get('/byclient/:clientId', async (req, res) => {
       const notes = await Note.find({ client: clientId })
           .populate('answer')
           .populate('exam')
+          .populate('quizz') 
           .exec();
 
       res.json(notes);
   } catch (error) {
       console.error('Error fetching notes for client:', error);
       res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+// Route to check if a document with given clientId and quizzId exists in the Note collection
+router.post('/check', async (req, res) => {
+  try {
+    const { clientId, quizzId } = req.body;
+
+    // Query the database to find a document with the given clientId and quizzId
+    const existingNote = await Note.findOne({ client: clientId, quizz: quizzId });
+
+    // If a document is found, return true to indicate that the button should be disabled
+    const isButtonDisabled = !!existingNote;
+
+    res.json({ isButtonDisabled });
+  } catch (error) {
+    console.error('Error checking Note document:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
