@@ -12,6 +12,7 @@ const sendEmail = asyncHandler(async (data, req, res) => {
         },
     });
 
+    console.log(process.env.MAIL_ADDRESS, process.env.MAIL_PASSWORD);
     const info = await transporter.sendMail({
         from: '"Hey 👻"',
         to: data.to,
