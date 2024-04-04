@@ -1,4 +1,4 @@
-const mongoose = require("mongoose"); 
+const mongoose = require("mongoose");
 
 
 var examSchema = new mongoose.Schema(
@@ -33,9 +33,9 @@ var examSchema = new mongoose.Schema(
 
 },
     type: {
-        type: String,
-        enum: ['revison', 'end of year exam', 'midterm exam'],
-        default: 'midterm exam'
+      type: String,
+      enum: ['revison', 'end of year exam', 'midterm exam'],
+      default: 'midterm exam'
     },
     format: {
         type: String,
@@ -46,6 +46,7 @@ var examSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Quiz',
   }
+
   },
 );
 

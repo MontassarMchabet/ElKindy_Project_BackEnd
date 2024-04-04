@@ -344,7 +344,7 @@ const registerAdmin = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'admin',
 
 
@@ -431,7 +431,7 @@ const registerProf = async (req, res) => {
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
             profilePicture: profilePicture ? profilePicture : "",
-            isEmailVerified: false,
+            isEmailVerified: true,
             role: 'prof',
 
 
@@ -476,11 +476,12 @@ const registerProf = async (req, res) => {
 const loginWithEmail = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        console.log(email, password);
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         const user = await User.findOne({ email });
+        console.log(user);
         if (!user) {
             return res.status(401).json({ message: 'Invalid email' });
         }
