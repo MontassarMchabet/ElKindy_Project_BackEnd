@@ -103,7 +103,7 @@ const eventSchema = mongoose.Schema({
     },
     room_shape: {
         type: String,
-        required: true
+        // required: true
     },
     room_capacity: {
         type: Number,

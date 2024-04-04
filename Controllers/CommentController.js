@@ -63,34 +63,28 @@ async function getAllComment(req,res){
 // });
 const addComment = asyncHandler(async (req, res) => {
   try {
-      // Extraire l'identifiant de l'événement de l'URL
-      const eventId = req.params.eventId;
+    const eventId = req.params.eventId;
 
-      // Vérifier si l'identifiant de l'événement est valide
-      if (!mongoose.Types.ObjectId.isValid(eventId)) {
-          return res.status(400).json({ message: "Invalid event ID" });
-      }
+    // Vérifier si l'identifiant de l'événement est valide
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: "Invalid event ID" });
+    }
 
-      // Récupérer l'ID de l'utilisateur connecté
-      // const userId = req.user._userId;
-    const userId = "65df69dae61e837fa7eae0ec";
-      
-      // Créer un nouvel objet de commentaire avec l'identifiant de l'événement et l'ID de l'utilisateur connecté
-      const newComment = await comment.create({
-          event: eventId, // Associer le commentaire à l'événement
-          user: userId,   // Associer le commentaire à l'utilisateur connecté
-          comment: req.body.comment,
-          date: Date.now()
-      });
+    // Créer un nouvel objet de commentaire en spécifiant l'ID de l'événement
+    const newComment = await comment.create({
+      event: eventId,
+      ...req.body // Ajoutez les autres champs du commentaire à partir de la requête
+    });
 
-      // Répondre avec le nouveau commentaire créé
-      res.json(newComment);
+    // Répondre avec le nouveau commentaire créé
+    res.json(newComment);
   } catch (error) {
-      // Gérer les erreurs
-      console.error("Error adding comment:", error);
-      res.status(500).json({ message: "Error adding comment" });
+    console.error("Error adding comment:", error);
+    res.status(500).json({ message: "Error adding comment" });
   }
 });
+
+
 
 // const addComment = asyncHandler(async (req, res) => {
 //   try {
