@@ -1,62 +1,6 @@
-const Planning = require('../models/Planning');
-const User = require('../Models/User');
-const Course = require('../Models/Course');
+const Planning = require('../Models/Planning');
+const Classroom = require('../Models/Classroom');
 const mongoose = require('mongoose');
-
-const validatePlanning = async (studentIds, courseId, date, startTime, endTime) => {
-    
-    try {
-        let isPlanningValid = true;
-        for (const userId of studentIds) {
-            
-            const isValid = await validatePlanningForUser(userId, courseId, date, startTime, endTime);
-            if (!isValid) {
-                isPlanningValid = false;
-                
-            }
-        }
-
-        return isPlanningValid;
-    } catch (error) {
-        console.error(" Erreur lors de la validation du planning : ", error);
-        return false;
-    }
-};
-
-const validatePlanningForUser = async (userId, courseId, date, startTime, endTime) => {
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new Error(`Utilisateur avec l'ID ${userId} non trouvé`);
-        }
-
-        const userLevel = user.level;
-
-        const maxWeeklyHours = getMaxWeeklyHoursForLevel(userLevel);
-        
-        const totalStudyHoursPerWeek = await calculateTotalStudyHoursPerWeek(userId, date, startTime, endTime);
-        if (totalStudyHoursPerWeek + calculateDuration(startTime, endTime) > maxWeeklyHours) {
-            return false;
-        }
-
-        const course = await Course.findById(courseId);
-        if (!course) {
-            throw new Error("Cours non trouvé");
-        }
-        const totalIndividualStudyHoursPerWeek = await calculateTotalIndividualStudyHoursPerWeek(userId, date, startTime, endTime,courseId);
-        if (course.type === 'individual' && calculateDuration(startTime, endTime) > 0.5 && (totalIndividualStudyHoursPerWeek + calculateDuration(startTime, endTime) > 30) ) {
-            return false;
-        }
-        
-      /*   if (totalIndividualStudyHoursPerWeek + calculateDuration(startTime, endTime) > 30) {
-            return false;
-        } */
-        return true;
-    } catch (error) {
-        console.error("Erreur lors de la validation du planning pour l'utilisateur :", error);
-        return false;
-    }
-};
 
 // Fonction pour récupérer les heures d'étude hebdomadaires maximales pour un niveau donné
 const getMaxWeeklyHoursForLevel = (level) => {
@@ -78,108 +22,81 @@ const getMaxWeeklyHoursForLevel = (level) => {
         case "6ème année":
             return 240; // 4h
         case "7ème année":
-            return 6.5; // 6h30mn
+            return 390; // 6h30mn
         default:
             return 0; 
     }
 };
 
-// Fonction pour calculer la durée entre deux horaires donnés 
 const calculateDuration = (startTime, endTime) => {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    const durationMilliseconds = end - start;
-    return durationMilliseconds / (1000 * 60 * 60); // Convertir la durée en heures decimales
+    const start = new Date(`01/01/2000 ${startTime}`);
+    const end = new Date(`01/01/2000 ${endTime}`);
+    const durationInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+    return durationInMinutes;
 };
-
-const calculateTotalStudyHoursPerWeek = async (userId, date, startTime, endTime) => {
-    
+const calculateTotalStudyHoursPerWeek = async (classroom, date) => {
     try {
         const weekStartDate = getWeekStartDate(date);
         const weekEndDate = getWeekEndDate(date);
-       // Convertir startTime et endTime en objets Date
-       const startTimeDate = new Date(`2000-01-01T${startTime}`);
-       const endTimeDate = new Date(`2000-01-01T${endTime}`);
-       // Calculer les minutes de début et de fin
-       const startMinutes = startTimeDate.getHours() * 60 + startTimeDate.getMinutes();
-       const endMinutes = endTimeDate.getHours() * 60 + endTimeDate.getMinutes();
-        const totalStudyHours = await Planning.aggregate([
-            {
-                $match: {
-                    studentIds: new mongoose.Types.ObjectId(userId), 
-                    date: { $gte: new Date(weekStartDate), $lte: new Date(weekEndDate) },
-                    
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalHours: {
-                        $sum: {
-                            $subtract: [
-                                endMinutes,
-                                startMinutes,
-                            
-                            ]
-                        }
-                    }
-                }
-            }
-        ]);
 
-        
-        return totalStudyHours.length > 0 ? totalStudyHours[0].totalHours : 0;
+        // Rechercher tous les plannings de l'utilisateur pour la semaine donnée
+        const userPlannings = await Planning.find({
+            classroomId: new mongoose.Types.ObjectId(classroom), 
+            date: { $gte: new Date(weekStartDate), $lte: new Date(weekEndDate) },
+        });
+
+        // Calculer la durée totale d'étude pour tous les plannings de l'utilisateur
+        let totalStudyHours = 0;
+        for (const planning of userPlannings) {
+            // Convertir les heures de début et de fin en objets Date
+            const startDate = new Date(`2000-01-01T${planning.startDate}`);
+            const endDate = new Date(`2000-01-01T${planning.endDate}`);
+            
+            // Calculer la différence de temps en minutes
+            const diffInMinutes = (endDate - startDate) / (1000 * 60);
+
+            // Ajouter la durée de ce planning à la durée totale
+            totalStudyHours += diffInMinutes;
+        }
+
+        //console.log(totalStudyHours);
+        return totalStudyHours;
     } catch (error) {
         console.error("Erreur lors du calcul du nombre total d'heures d'étude par semaine :", error);
         return 0;
     }
 };
 
-const calculateTotalIndividualStudyHoursPerWeek = async (userId, date, startTime, endTime,courseId) => {
-    console.log (courseId)
+
+
+const calculateTotalIndividualStudyHoursPerWeek = async (userId, date) => {
+
     try {
         const weekStartDate = getWeekStartDate(date);
         const weekEndDate = getWeekEndDate(date);
-        const startTimeDate = new Date(`2000-01-01T${startTime}`);
-        const endTimeDate = new Date(`2000-01-01T${endTime}`);
-        const startMinutes = startTimeDate.getHours() * 60 + startTimeDate.getMinutes();
-        const endMinutes = endTimeDate.getHours() * 60 + endTimeDate.getMinutes();
+        // Rechercher tous les plannings de l'utilisateur pour la semaine donnée
+        const userPlannings = await Planning.find({
+            studentIds: new mongoose.Types.ObjectId(userId), 
+            date: { $gte: new Date(weekStartDate), $lte: new Date(weekEndDate) },
+        });
 
-        // Récupérer le type de cours à partir de l'ID du cours
-        const courseDetails = await Course.findById(courseId);
-        const courseType = courseDetails ? courseDetails.type : null;
-        // Vérifier si le type de cours est individuel
-        if (courseType === 'individual') {
-            // Calculer le nombre total d'heures d'étude par semaine pour les cours individuels
-            const totalIndividualStudyHours = await Planning.aggregate([
-                {
-                    $match: {
-                        studentIds: new mongoose.Types.ObjectId(userId),
-                        date: { $gte: new Date(weekStartDate), $lte: new Date(weekEndDate) },
-                        courseId: new mongoose.Types.ObjectId(courseId) // Filtrer par ID de cours
-                    }
-                },
-                {
-                    $group: {
-                        _id: null,
-                        totalHours: {
-                            $sum: {
-                                $subtract: [
-                                    endMinutes,
-                                    startMinutes
-                                ]
-                            }
-                        }
-                    }
-                }
-            ]);
+        // Calculer la durée totale d'étude pour tous les plannings de l'utilisateur
+        let totalStudyHours = 0;
+        for (const planning of userPlannings) {
+            // Convertir les heures de début et de fin en objets Date
+            const startDate = new Date(`2000-01-01T${planning.startDate}`);
+            const endDate = new Date(`2000-01-01T${planning.endDate}`);
+            
+            // Calculer la différence de temps en minutes
+            const diffInMinutes = (endDate - startDate) / (1000 * 60);
 
-            console.log(totalIndividualStudyHours);
-            return totalIndividualStudyHours.length > 0 ? totalIndividualStudyHours[0].totalHours : 0;
-        } else {
-            // Si le cours n'est pas individuel retouné 0 
-            return 0;
+            // Ajouter la durée de ce planning à la durée totale
+            totalStudyHours += diffInMinutes;
         }
+
+        console.log(totalStudyHours);
+        return totalStudyHours;
+       
     } catch (error) {
         console.error("Erreur lors du calcul du nombre total d'heures d'étude par semaine pour les cours individuels :", error);
         return 0;
@@ -204,6 +121,80 @@ const getWeekEndDate = (dateString) => {
     weekEndDate.setHours(23, 59, 59, 999);
     return weekEndDate;
 };
+/////////////////////////////////////////////////////////////
+const CheckDurationOfCourse = async (req, res) => {
+    try {
+        const { startTime, endTime,type } = req.params;
+        if (type==="instrument"){
+            // Vérifier que la durée du cours ne dépasse pas 30 minutes
+            if (calculateDuration(startTime, endTime) > 30) {
+                return res.json({ correctDuration: false });
+            }
+            // Vérifier que l'heure de fin est après l'heure de début
+            if (endTime <= startTime) {
+                return res.json({ correctDuration: false });
+            }
+        }
+        if (type==="solfège"){
+      
+            // Vérifier que l'heure de fin est après l'heure de début
+            if (endTime <= startTime) {
+                return res.json({ correctDuration: false });
+            }
+        }
+        return res.json({ correctDuration: true });
+    } catch (error) {
+        console.error('Error checking Duration:', error);
+        // Gérer les erreurs de requête en renvoyant une réponse avec un statut d'erreur
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+const calculateTotalIndividualStudy = async (req, res) => {
+    try {
+        const { userId,date,type } = req.params;
+        if(type==="instrument"){
+            const totalIndividualStudyHoursPerWeek = await calculateTotalIndividualStudyHoursPerWeek(userId, date);
+            //console.log(totalIndividualStudyHoursPerWeek);
+            if (totalIndividualStudyHoursPerWeek >= 30 ) {
+                
+                return res.json({ TotalIndividualStudy: false });
+            }
+    }
+        return res.json({ TotalIndividualStudy: true });
+    } catch (error) {
+        console.error('Error checking Duration:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+const calculateTotalStudyHours = async (req, res) => {
+    try {
+        const { classroomId,date,startTime, endTime } = req.params;
+        const classroom = await Classroom.findById(classroomId);
+        if (!Classroom) {
+            
+            return res.status(500).json({ error: `Utilisateur avec l'ID ${classroomId} non trouvé` });
+        }
 
-
-module.exports = validatePlanning;
+        const ClassroomLevel = classroom.level;
+        //console.log('ClassroomLevel'+ClassroomLevel);
+       
+        const maxWeeklyHours = getMaxWeeklyHoursForLevel(ClassroomLevel);
+        const totalSolfegeStudyHoursPerWeek = await calculateTotalStudyHoursPerWeek(classroomId, date);
+        //console.log('totalSolfegeStudyHoursPerWeek:'+totalSolfegeStudyHoursPerWeek);
+      
+        const d =calculateDuration(startTime, endTime);
+        //console.log('d:'+d);
+        //console.log('maxWeeklyHours:'+maxWeeklyHours);
+        
+        if ((totalSolfegeStudyHoursPerWeek +d)  > (maxWeeklyHours-30)) {
+            
+            return res.json({ totalStudyHoursPerWeek: false });
+           
+        }
+        return res.json({ totalStudyHoursPerWeek: true });
+    } catch (error) {
+        console.error('Error checking Duration:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+module.exports = {CheckDurationOfCourse,calculateTotalIndividualStudy,calculateTotalStudyHours};
