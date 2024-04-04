@@ -22,7 +22,7 @@ const getMaxWeeklyHoursForLevel = (level) => {
         case "6ème année":
             return 240; // 4h
         case "7ème année":
-            return 6.5; // 6h30mn
+            return 390; // 6h30mn
         default:
             return 0; 
     }
@@ -59,7 +59,7 @@ const calculateTotalStudyHoursPerWeek = async (classroom, date) => {
             totalStudyHours += diffInMinutes;
         }
 
-        console.log(totalStudyHours);
+        //console.log(totalStudyHours);
         return totalStudyHours;
     } catch (error) {
         console.error("Erreur lors du calcul du nombre total d'heures d'étude par semaine :", error);
@@ -135,6 +135,13 @@ const CheckDurationOfCourse = async (req, res) => {
                 return res.json({ correctDuration: false });
             }
         }
+        if (type==="solfège"){
+      
+            // Vérifier que l'heure de fin est après l'heure de début
+            if (endTime <= startTime) {
+                return res.json({ correctDuration: false });
+            }
+        }
         return res.json({ correctDuration: true });
     } catch (error) {
         console.error('Error checking Duration:', error);
@@ -147,7 +154,7 @@ const calculateTotalIndividualStudy = async (req, res) => {
         const { userId,date,type } = req.params;
         if(type==="instrument"){
             const totalIndividualStudyHoursPerWeek = await calculateTotalIndividualStudyHoursPerWeek(userId, date);
-            console.log(totalIndividualStudyHoursPerWeek);
+            //console.log(totalIndividualStudyHoursPerWeek);
             if (totalIndividualStudyHoursPerWeek >= 30 ) {
                 
                 return res.json({ TotalIndividualStudy: false });
@@ -169,16 +176,15 @@ const calculateTotalStudyHours = async (req, res) => {
         }
 
         const ClassroomLevel = classroom.level;
-        console.log('ClassroomLevel'+ClassroomLevel);
-        //console.log('userclassroom'+user.classroom);
+        //console.log('ClassroomLevel'+ClassroomLevel);
+       
         const maxWeeklyHours = getMaxWeeklyHoursForLevel(ClassroomLevel);
         const totalSolfegeStudyHoursPerWeek = await calculateTotalStudyHoursPerWeek(classroomId, date);
-        console.log('totalSolfegeStudyHoursPerWeek:'+totalSolfegeStudyHoursPerWeek);
-        /* const totalIndividualStudyHoursPerWeek = await calculateTotalIndividualStudyHoursPerWeek(userId, date, startTime, endTime);
-        console.log('totalIndividualStudyHoursPerWeek:'+totalIndividualStudyHoursPerWeek); */
+        //console.log('totalSolfegeStudyHoursPerWeek:'+totalSolfegeStudyHoursPerWeek);
+      
         const d =calculateDuration(startTime, endTime);
-        console.log('d:'+d);
-        console.log('maxWeeklyHours:'+maxWeeklyHours);
+        //console.log('d:'+d);
+        //console.log('maxWeeklyHours:'+maxWeeklyHours);
         
         if ((totalSolfegeStudyHoursPerWeek +d)  > (maxWeeklyHours-30)) {
             

@@ -1,5 +1,6 @@
 const Planning = require('../Models/Planning');
 const mongoose = require('mongoose');
+const User = require('../Models/User');
 //////////////////////// create ///////////////////
 
 const isRoomAvailable = async (req, res) => {
@@ -31,30 +32,34 @@ const isRoomAvailable = async (req, res) => {
 const areStudentsAvailable = async (req, res) => {
     try {
         const { studentIds, date, startTime, endTime } = req.params;
-        const studentIdsArray = studentIds.split(',');
-        console.log(studentIdsArray);
+        const student = await User.findById(studentIds);
+        const classroom = student.classroom;
 
-        for (const studentId of studentIdsArray) {
-            const existingPlanningForStudent = await Planning.findOne({
-                date,
-                studentIds: studentId,
-                $or: [
-                    { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
-                    { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
-                ]
-            });
-            if (existingPlanningForStudent) {
-                return res.json({ areStudentsAvailable: false });
-            }
+        const query = {
+            date,
+            $or: [
+                { $and: [{ studentIds: studentIds }, { classroomId: { $exists: false } }] },
+                { $and: [{ classroomId: classroom }, { studentIds: { $exists: false } }] }
+            ],
+            $or: [
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+            ]
+        };
+
+        const existingPlanningForStudents = await Planning.findOne(query);
+        if (existingPlanningForStudents) {
+            return res.json({ areStudentsAvailable: false });
         }
-        // Si aucune planification existante n'est trouvée pour aucun des étudiants
+
         return res.json({ areStudentsAvailable: true });
-       
+
     } catch (error) {
         console.error('Error checking student availability:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 const isTeacherAvailable = async (req, res) => {
     try {
@@ -119,14 +124,21 @@ const createPlanning = async (req, res) => {
 
 ////////////// Read ////////////////////////////////////////////
 const getAllPlannings = async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Numéro de la page, par défaut 1
+    const limit = parseInt(req.query._limit) ; // Limite d'éléments par page, par défaut 10
+    
+    // Logique pour récupérer les plannings en fonction de la page et de la limite
     try {
-        // Récupérer tous les plannings 
-        const plannings = await Planning.find();
-
-        res.status(200).json(plannings);
+        const plannings = await Planning.find()
+            .skip((page - 1) * limit)
+            .limit(limit);
+ 
+            const totalDocuments = await Planning.countDocuments();
+        res.json({plannings,totalDocuments}
+            
+        );
     } catch (error) {
-        console.error("Erreur lors de la récupération des plannings :", error);
-        res.status(500).json({ message: "Une erreur s'est produite lors de la récupération des plannings." });
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 ///////////// getById ///////////////////

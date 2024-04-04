@@ -17,8 +17,12 @@ const createClassrom = async (req, res) => {
 };
 const getAllclassroom = async (req, res) => {
     try {
-        const classroom = await Classroom.find();
-        res.status(200).json(classroom);
+        const page = parseInt(req.query.page) || 1; // Numéro de la page, par défaut 1
+        const limit = parseInt(req.query._limit) ; // Limite d'éléments par page, par défaut 10
+        const classroom = await Classroom.find().skip((page - 1) * limit)
+        .limit(limit);
+        const totalDocuments = await Classroom.countDocuments();
+        res.status(200).json({classroom,totalDocuments});
     } catch (error) {
         console.error("Erreur lors de la récupération des cours :", error);
         res.status(500).json({ message: "Une erreur s'est produite lors de la récupération des cours." });
