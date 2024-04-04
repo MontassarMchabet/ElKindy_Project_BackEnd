@@ -60,20 +60,14 @@ const getAllOrders = expressAsyncHandler(async (req, res) => {
 
 
 const updateOrderStatus = expressAsyncHandler(async (req, res) => {
-    const { status } = req.body;
     const id = req.params.id;
     try {
-        const updateOrderStatus = await Order.findByIdAndUpdate(
-            id,
-            {
-                orderStatus: status,
-                paymentIntent: {
-                    status: status,
-                },
-            },
-            { new: true }
-        );
-        res.json(updateOrderStatus);
+        const orders = await Order.findById(id);
+        orders.orderStatus = req.body.orderStatus;
+        await orders.save()  
+        res.json({
+          orders
+        });
     } catch (error) {
         throw new Error(error);
     }
@@ -89,6 +83,18 @@ const deleteOrder = expressAsyncHandler(async (req, res) => {
   }
 });
 
+const getSingleOrder = expressAsyncHandler(async (req, res) => {
+  const { _id } = req.params;
+  try {
+      const orders = await Order.findOne(_id)
+      res.json({orders});
+  } catch (error) {
+      throw new Error(error);
+  }
+});
+
+
+
 module.exports = {
     createOrder,
     getOrders,
@@ -96,4 +102,5 @@ module.exports = {
     updateOrderStatus,
     getMyOrder,
     deleteOrder,
+    getSingleOrder,
 };
