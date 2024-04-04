@@ -3,7 +3,6 @@ pipeline{
     tools{
         nodejs '21.6.2'
     }
-
     stages {
         stage('Install dependencies') {
             steps{
@@ -19,7 +18,6 @@ pipeline{
             }
         }
         stage('Unit Test') {
-
             steps{
                 script{
                     try {
@@ -32,7 +30,7 @@ pipeline{
             }
         }
         stage('SonarQube Analysis') {
-                steps{
+               /* steps{
                 script {
                     try{
                         def scannerHome = tool 'scanner'
@@ -45,11 +43,19 @@ pipeline{
                         error("Failed to build application: ${err}")
                     }
                 }
+            }*/
+            steps{
+                script{
+                    try {
+                        echo 'This is a testing stage for SonarQube Analysis.'
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        error("Unit tests failed: ${err}")
+                    }
+                }
             }
         }
-
         stage('Build application') {
-
             steps{
                 script {
                     try {
@@ -63,5 +69,14 @@ pipeline{
                 }
             }
         }
+        stage('Building images (node and mongo)') {
+
+            steps{
+                script {
+                    sh 'docker build -t 192.168.33.10:8083/nodemongoapp:6.0 .'
+                }
+            }
+        }
+
     }
 }

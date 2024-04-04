@@ -30,6 +30,39 @@ async function getAllEvent(req,res){
         throw new Error(error);
     }
 });
+// const addEvent = asyncHandler(async (req, res) => {
+//   try {
+//       // Vérifier si req.body.series est un tableau avant de l'utiliser
+//       const series = Array.isArray(req.body.series) ? req.body.series : [];
+//       const seats = req.body.seats;
+
+//       // Fonction pour calculer la longueur totale de la série sans les tirets
+//       const calculateSeriesLength = (series) => {
+//           let totalLength = 0;
+//           series.forEach(item => {
+//               // Ajoute la longueur de chaque élément de la série
+//               totalLength += item.replace(/-/g, '').length;
+//           });
+//           return totalLength;
+//       }
+
+//       // Calcul de la longueur totale de la série sans les tirets
+//       const seriesLength = calculateSeriesLength(series);
+
+//       // Calcul de la capacité
+//       const capacity = seats * seriesLength;
+
+//       // Créez un nouvel événement en utilisant les données du corps de la requête et la capacité calculée
+//       const newEvent = await Event.create({
+//           ...req.body,
+//           room_capacity: capacity // Ajoutez la capacité calculée à la propriété room_capacity de l'événement
+//       });
+//       res.json(newEvent);
+//   } catch (error) {
+//       throw new Error(error);
+//   }
+// });
+
 
 async function getEventbyid(req, res) {
   try {
@@ -54,28 +87,52 @@ async function getEventbyid(req, res) {
 //     console.error(error);
 //     res.status(500).json({ error: "Erreur serveur" });
 // }
-async function getEventTickets(req, res) {
+// async function getEventTickets(req, res) {
 
+//   try {
+//     const eventId = req.params.eventId;
+//     const tickets = await Ticket.find({ event: eventId });
+//     res.json(tickets);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erreur serveur" });
+//   }
+// }
+async function getEventTickets(req, res) {
   try {
     const eventId = req.params.eventId;
-    const tickets = await Ticket.find({ event: eventId });
+    const tickets = await Ticket.find({ event: eventId }).populate('user', 'username').populate('event', 'name');
+    // Le champ 'user' dans chaque ticket sera maintenant remplacé par l'objet complet de l'utilisateur, contenant uniquement le nom d'utilisateur.
+    // Le champ 'event' dans chaque ticket sera maintenant remplacé par l'objet complet de l'événement, contenant uniquement le titre.
     res.json(tickets);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
-async function getEventComments(req, res) {
+// async function getEventComments(req, res) {
 
+//   try {
+//     const eventId = req.params.eventId;
+//     const comments = await Comment.find({ event: eventId });
+//     res.json(comments);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erreur serveur" });
+//   }
+// }
+async function getEventComments(req, res) {
   try {
     const eventId = req.params.eventId;
-    const comments = await Comment.find({ event: eventId });
+    const comments = await Comment.find({ event: eventId }).populate('user', 'username profilePicture');
+    // Le champ 'user' dans chaque commentaire sera maintenant remplacé par l'objet complet de l'utilisateur, contenant uniquement le nom d'utilisateur et l'image.
     res.json(comments);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 }
+
 const deleteEvent = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {

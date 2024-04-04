@@ -27,7 +27,7 @@ const clientSchema = new mongoose.Schema({
     },
     level: {
         type: String,
-        enum: ['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année']
+        enum: ['Initiation', 'Preparatoire', '1eme annee', '2eme annee', '3eme annee', '4eme annee', '5eme annee', '6eme annee', '7eme annee']
 
     }
 }, { discriminatorKey: 'role' });

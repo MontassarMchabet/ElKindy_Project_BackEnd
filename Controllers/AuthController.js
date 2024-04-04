@@ -274,7 +274,8 @@ const registerClient = async (req, res) => {
             fatherOccupation: fatherOccupation ? fatherOccupation : "",
             motherOccupation: motherOccupation ? motherOccupation : "",
             isSubscribed: false,
-            level: level ? level : "",
+
+            level: level ? level : "Initiation",
         });
         await newClient.save();
 
@@ -476,11 +477,12 @@ const registerProf = async (req, res) => {
 const loginWithEmail = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        console.log(email, password);
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         const user = await User.findOne({ email });
+        console.log(user);
         if (!user) {
             return res.status(401).json({ message: 'Invalid email' });
         }
