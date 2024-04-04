@@ -107,7 +107,7 @@ const eventSchema = mongoose.Schema({
     },
     room_capacity: {
         type: Number,
-        required: true
+        
     },
     room_distributionSeats: [{ type: String }],
     

@@ -30,6 +30,39 @@ async function getAllEvent(req,res){
         throw new Error(error);
     }
 });
+// const addEvent = asyncHandler(async (req, res) => {
+//   try {
+//       // Vérifier si req.body.series est un tableau avant de l'utiliser
+//       const series = Array.isArray(req.body.series) ? req.body.series : [];
+//       const seats = req.body.seats;
+
+//       // Fonction pour calculer la longueur totale de la série sans les tirets
+//       const calculateSeriesLength = (series) => {
+//           let totalLength = 0;
+//           series.forEach(item => {
+//               // Ajoute la longueur de chaque élément de la série
+//               totalLength += item.replace(/-/g, '').length;
+//           });
+//           return totalLength;
+//       }
+
+//       // Calcul de la longueur totale de la série sans les tirets
+//       const seriesLength = calculateSeriesLength(series);
+
+//       // Calcul de la capacité
+//       const capacity = seats * seriesLength;
+
+//       // Créez un nouvel événement en utilisant les données du corps de la requête et la capacité calculée
+//       const newEvent = await Event.create({
+//           ...req.body,
+//           room_capacity: capacity // Ajoutez la capacité calculée à la propriété room_capacity de l'événement
+//       });
+//       res.json(newEvent);
+//   } catch (error) {
+//       throw new Error(error);
+//   }
+// });
+
 
 async function getEventbyid(req, res) {
   try {
