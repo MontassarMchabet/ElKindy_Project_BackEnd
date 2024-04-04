@@ -274,6 +274,7 @@ const registerClient = async (req, res) => {
             fatherOccupation: fatherOccupation ? fatherOccupation : "",
             motherOccupation: motherOccupation ? motherOccupation : "",
             isSubscribed: false,
+
             level: level ? level : "Initiation",
         });
         await newClient.save();

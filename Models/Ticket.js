@@ -11,7 +11,7 @@ const ticketSchema = new mongoose.Schema({
   },
   ticketType: {
     type: String,
-    required: true
+    
   },
   price: {
     type: Number,
@@ -20,7 +20,7 @@ const ticketSchema = new mongoose.Schema({
   selectedSeats: [{ type: String }],
   date: {
       type: Date,
-      default: Date.now 
+      // default: Date.now 
   }
 });
 
