@@ -5,7 +5,12 @@ const noteSchema = new mongoose.Schema(
     exam: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Exam",
-      required: true,
+      
+    },
+    quizz: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Quiz",
+      
     },
     client: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,12 +20,12 @@ const noteSchema = new mongoose.Schema(
     answer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Answer",
-      required: true,
+      
     },
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "prof", 
-      required: true,
+      
     },
     content: {
       type: String,
