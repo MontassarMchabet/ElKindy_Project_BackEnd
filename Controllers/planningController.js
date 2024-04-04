@@ -1,110 +1,144 @@
-const Planning = require('../models/Planning');
-const Room = require('../Models/Room');
+const Planning = require('../Models/Planning');
+const mongoose = require('mongoose');
 const User = require('../Models/User');
-const validatePlanning = require('./validatePlanning');
 //////////////////////// create ///////////////////
 
-const isRoomAvailable = async (roomId, date, startTime, endTime) => {
-    const existingPlanningInRoom = await Planning.findOne({
-        roomId,
-        date,
-        $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
-        ]
-    });
-    return !existingPlanningInRoom;
-};
+const isRoomAvailable = async (req, res) => {
+    try {
+        const { roomId, date, startTime, endTime } = req.params;
 
-const areStudentsAvailable = async (studentIds, date, startTime, endTime) => {
-    for (const studentId of studentIds) {
-        const existingPlanningForStudent = await Planning.findOne({
+        // Recherchez les plannings existants dans la salle pour la date et l'heure spécifiées
+        const existingPlanningInRoom = await Planning.findOne({
+            roomId,
             date,
-            studentIds: studentId,
             $or: [
-                { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-                { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
             ]
         });
-        if (existingPlanningForStudent) {
-            return false;
-        }
+
+        // Vérifiez si un planning existe dans la salle pour l'heure spécifiée
+        const isRoomAvailable = !existingPlanningInRoom;
+
+        // Envoyez la réponse appropriée en fonction de la disponibilité de la salle
+        res.json({ isRoomAvailable });
+    } catch (error) {
+        console.error('Error checking room availability:', error);
+        // Gérer les erreurs de requête en renvoyant une réponse avec un statut d'erreur
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-    return true;
 };
 
-const isTeacherAvailable = async (teacherId, date, startTime, endTime) => {
-    const existingPlanningForTeacher = await Planning.findOne({
-        date,
-        teacherId,
-        $or: [
-            { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
-            { startTime: { $eq: startTime }, endTime: { $eq: endTime } }
-        ]
-    });
-    return !existingPlanningForTeacher;
-};
-
-const createPlanning = async (req, res) => {
-    const session = await Planning.startSession();
-    session.startTransaction();
+const areStudentsAvailable = async (req, res) => {
     try {
-        const { courseId, date, startTime, endTime, roomId, teacherId, studentIds } = req.body;
+        const { studentIds, date, startTime, endTime } = req.params;
+        const student = await User.findById(studentIds);
+        const classroom = student.classroom;
 
-        const isRoomAvailableResult = await isRoomAvailable(roomId, date, startTime, endTime);
-        if (!isRoomAvailableResult) {
-            return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
-        }
-
-        const areStudentsAvailableResult = await areStudentsAvailable(studentIds, date, startTime, endTime);
-        if (!areStudentsAvailableResult) {
-            return res.status(400).json({ message: "Certains étudiants sont déjà occupés à ce moment-là." });
-        }
-
-        const isTeacherAvailableResult = await isTeacherAvailable(teacherId, date, startTime, endTime);
-        if (!isTeacherAvailableResult) {
-            return res.status(400).json({ message: "L'enseignant est déjà occupé à ce moment-là." });
-        }
-         // Validation du nombre d'heures d'étude par semaine
-         const isValidPlanning = await validatePlanning(studentIds,courseId, date, startTime, endTime);
-         if (!isValidPlanning) {
-             return res.status(400).json({ message: "Le nombre d'heures d'étude par semaine est dépassé pour cet utilisateur." });
-         }
-        const newPlanning = new Planning({
-            courseId,
+        const query = {
             date,
-            startTime,
-            endTime,
-            roomId,
+            $or: [
+                { $and: [{ studentIds: studentIds }, { classroomId: { $exists: false } }] },
+                { $and: [{ classroomId: classroom }, { studentIds: { $exists: false } }] }
+            ],
+            $or: [
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+            ]
+        };
+
+        const existingPlanningForStudents = await Planning.findOne(query);
+        if (existingPlanningForStudents) {
+            return res.json({ areStudentsAvailable: false });
+        }
+
+        return res.json({ areStudentsAvailable: true });
+
+    } catch (error) {
+        console.error('Error checking student availability:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+const isTeacherAvailable = async (req, res) => {
+    try {
+        const { teacherId, date, startTime, endTime } = req.params;
+        const existingPlanningForTeacher = await Planning.findOne({
+            date,
             teacherId,
-            studentIds
+            $or: [
+                { startDate: { $lt: endTime }, endDate: { $gt: startTime } },
+                { startDate: { $eq: startTime }, endDate: { $eq: endTime } }
+            ]
         });
+        
+        const isTeacherAvailable = !existingPlanningForTeacher;
 
-        // Sauvegarder le planning dans BD
-        const savedPlanning = await newPlanning.save({ session });
+        // Envoyez la réponse appropriée en fonction de la disponibilité de la salle
+        res.json({ isTeacherAvailable });
+    } catch (error) {
+        console.error('Error checking teacher availability:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+const createPlanning = async (req, res) => {
+    try {
+        const {  date, startDate, endDate, roomId, teacherId, type,classroomId } = req.body;
+        let newPlanning;
 
-        await session.commitTransaction();
-        session.endSession();
+        if (type === "instrument") {
+            const { studentIds } = req.body;
+            newPlanning = new Planning({
+               
+                date,
+                startDate,
+                endDate,
+                type,
+                roomId,
+                teacherId,
+                studentIds,
+            });
+        };
+        if (type === "solfège")  {
+            newPlanning = new Planning({
+                
+                date,
+                startDate,
+                endDate,
+                type,
+                roomId,
+                teacherId,
+                classroomId,
+            });
+            
+        }
 
+        const savedPlanning = await newPlanning.save();
         res.status(201).json(savedPlanning);
     } catch (error) {
-        console.error("Erreur lors de la création du planning :", error);
-        await session.abortTransaction();
-        session.endSession();
-        res.status(500).json({ message: "Une erreur s'est produite lors de la création du planning." });
+        console.error("Error creating planning:", error);
+        res.status(500).json({ message: "An error occurred while creating the planning." });
     }
 };
 
 ////////////// Read ////////////////////////////////////////////
 const getAllPlannings = async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Numéro de la page, par défaut 1
+    const limit = parseInt(req.query._limit) ; // Limite d'éléments par page, par défaut 10
+    
+    // Logique pour récupérer les plannings en fonction de la page et de la limite
     try {
-        // Récupérer tous les plannings 
-        const plannings = await Planning.find();
-
-        res.status(200).json(plannings);
+        const plannings = await Planning.find()
+            .skip((page - 1) * limit)
+            .limit(limit);
+ 
+            const totalDocuments = await Planning.countDocuments();
+        res.json({plannings,totalDocuments}
+            
+        );
     } catch (error) {
-        console.error("Erreur lors de la récupération des plannings :", error);
-        res.status(500).json({ message: "Une erreur s'est produite lors de la récupération des plannings." });
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 ///////////// getById ///////////////////
@@ -153,25 +187,33 @@ const updatePlanning = async (req, res) => {
         // Récupérer l'ID du planning à mettre à jour à partir des paramètres de la requête
         const { id } = req.params;
         
-        // Validation des entrées (ajoutez votre logique ici)
-        const { courseId, date, startTime, endTime, roomId, teacherId, studentIds } = req.body;
+        const {  date, startDate, endDate, roomId, teacherId, type,classroomId } = req.body;
+        let updatedPlanning;
 
-        // Vérifier la disponibilité de la salle de cours
-        const isRoomAvailable = await isStudentsAndTeacherAvailable(roomId, date, startTime, endTime, studentIds, teacherId);
-        if (!isRoomAvailable) {
-            return res.status(400).json({ message: "La salle de cours est déjà réservée à ce moment-là." });
+        if (type === "instrument") {
+            const { studentIds } = req.body;
+            updatedPlanning = await Planning.findByIdAndUpdate(id, {
+            
+                date,
+                startDate,
+                endDate,
+                roomId,
+                teacherId,
+                studentIds
+            }, { new: true });
+        };
+        if (type === "solfège")  {
+            updatedPlanning = await Planning.findByIdAndUpdate(id, {
+            
+                date,
+                startDate,
+                endDate,
+                roomId,
+                teacherId,
+                classroomId
+            }, { new: true });
+            
         }
-
-        // Mettre à jour le planning
-        const updatedPlanning = await Planning.findByIdAndUpdate(id, {
-            courseId,
-            date,
-            startTime,
-            endTime,
-            roomId,
-            teacherId,
-            studentIds
-        }, { new: true });
 
         // Vérifier si le planning a été trouvé et mis à jour
         if (!updatedPlanning) {
@@ -184,10 +226,38 @@ const updatePlanning = async (req, res) => {
         res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour du planning." });
     }
 };
+const getPlanningWithStudentIds = async (req, res) => {
+    try {
+        // Recherchez les plannings avec le champ studentIds
+        const planningsWithStudentIds = await Planning.find({ studentIds: { $exists: true } });
+
+        res.status(200).json(planningsWithStudentIds);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des plannings :", error);
+        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+    }
+};
+const getPlanningWithTeacherId = async (req, res) => {
+    try {
+        const { teacherId } = req.params;
+        const planningsWithTeacherId = await Planning.find({ teacherId: new mongoose.Types.ObjectId(teacherId)});
+
+        res.status(200).json(planningsWithTeacherId);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des plannings :", error);
+        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+    }
+};
 module.exports = {
     createPlanning,
     getAllPlannings,
     getPlanningById,
     deletePlanning,
-    updatePlanning
+    updatePlanning,
+    isRoomAvailable,
+    isTeacherAvailable,
+    areStudentsAvailable,
+    getPlanningWithStudentIds,
+    getPlanningWithTeacherId
+
 };

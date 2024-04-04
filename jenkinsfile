@@ -44,10 +44,6 @@ pipeline{
                     }
                 }
             }*/
-<<<<<<< HEAD
-
-=======
->>>>>>> 57346571ce7c252a51838f6821e94d0878c75a5e
             steps{
                 script{
                     try {
@@ -74,20 +70,13 @@ pipeline{
             }
         }
         stage('Building images (node and mongo)') {
-<<<<<<< HEAD
-steps{
-script {
-    sh 'docker build -t 192.168.33.10:8083/nodemongoapp:6.0 .'
-}
-}
-}
-=======
+
             steps{
                 script {
                     sh 'docker build -t 192.168.33.10:8083/nodemongoapp:6.0 .'
                 }
             }
         }
->>>>>>> 57346571ce7c252a51838f6821e94d0878c75a5e
+
     }
 }
