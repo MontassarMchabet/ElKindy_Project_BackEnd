@@ -2,17 +2,21 @@ const Exam = require('../Models/Exam');
 const asyncHandler = require("express-async-handler");
 const axios = require("axios");
 const Client = require('../Models/Client');
+const Prof = require('../Models/Prof')
 
 const createExam = asyncHandler(async (req, res) => {
   try {
-    const { title, description, type, format, pdfFile,schoolGrade } = req.body;
+    const { title, description, type, format, pdfFile,level,prof , endAt,quiz} = req.body;
     const newExamData = {
       title,
       description,
       type,
       format,
       pdfFile: pdfFile || "",
-      schoolGrade,
+      level,
+      prof,
+      endAt,
+      quiz,
     };
     const newExam = await Exam.create(newExamData);
     res.json(newExam);
@@ -22,16 +26,21 @@ const createExam = asyncHandler(async (req, res) => {
   }
 });
 
-///get exam by id
 const getExam = asyncHandler(async (req, res) => {
-    const { id } = req.query;
-    try {
-      const findExam = await Exam.findById(id);
-      res.json(findExam);
-    } catch (error) {
-      throw new Error(error);
+  try {
+    console.log('Request parameters:', req.params); 
+    const { id } = req.params; 
+    const findExam = await Exam.findById(id).populate('quiz'); // Populate the quiz field
+    if (!findExam) {
+      return res.status(404).json({ message: 'Exam not found' });
     }
-  });
+    res.json(findExam);
+  } catch (error) {
+    console.error('Error fetching exam:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 ///Get all exams
   const getAllExam = asyncHandler(async (req, res) => {
@@ -42,6 +51,8 @@ const getExam = asyncHandler(async (req, res) => {
       throw new Error(error);
     }
   });
+
+
 
   const deleteExam = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -71,21 +82,31 @@ const getExam = asyncHandler(async (req, res) => {
 
 
   /// get exams of a spesific class
-const getExamsByClass = asyncHandler(async (req, res) => {
-  const { schoolGrade } = req.params;
+  const getExamsByClass = asyncHandler(async (req, res) => {
+    const { level } = req.params;
 
-  try {
-    const exams = await Exam.find({ schoolGrade: schoolGrade });
-    res.json(exams);
-  } catch (error) {
-    console.error("Error getting exams by class:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+    console.log("Received request with level:", level);
+
+    try {
+        // Ensure the level is one of the valid options
+        if (!['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année'].includes(level)) {
+            return res.status(400).json({ message: "Invalid level provided" });
+        }
+
+        const exams = await Exam.find({ level: level });
+      // Log the exams found
+
+        res.json(exams);
+    } catch (error) {
+        console.error("Error getting exams by level:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 });
 
+  
   /// get exams for the client
 const getExamsByClientGrade = asyncHandler(async (req, res) => {
-  const { schoolGrade } = req.params;
+  const { level } = req.params;
 
   try {
 
@@ -95,7 +116,7 @@ const getExamsByClientGrade = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Client not found" });
     }
 
-    const exams = await Exam.find({ schoolGrade: client.schoolGrade });
+    const exams = await Exam.find({ level: client.level });
 
     res.json(exams);
   } catch (error) {
@@ -104,6 +125,26 @@ const getExamsByClientGrade = asyncHandler(async (req, res) => {
   }
 });
 
+const getExamsByProfId = asyncHandler(async (req, res) => {
+
+  try {
+    
+    const profe= await Prof.findById(req.user.id);
+
+   
+    if (!profe) {
+      return res.status(404).json({ message: "Professor not found" });
+    }
+
+    // Fetch exams associated with the professor
+    const exams = await Exam.find({ prof: profe._id });
+
+    res.json(exams);
+  } catch (error) {
+    console.error("Error getting exams by professor ID:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 module.exports = {
     createExam,
@@ -113,4 +154,5 @@ module.exports = {
     updateExam,
     getExamsByClass,
     getExamsByClientGrade,
+    getExamsByProfId,
 };
