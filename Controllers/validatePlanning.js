@@ -197,4 +197,4 @@ const calculateTotalStudyHours = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-module.exports = {CheckDurationOfCourse,calculateTotalIndividualStudy,calculateTotalStudyHours};
+module.exports = {CheckDurationOfCourse,calculateTotalIndividualStudy,calculateTotalStudyHours,getMaxWeeklyHoursForLevel};
