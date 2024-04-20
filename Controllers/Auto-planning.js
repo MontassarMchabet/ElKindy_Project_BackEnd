@@ -1,89 +1,145 @@
-
 const Planning = require('../Models/Planning');
 const Room = require('../Models/Room');
 const User = require('../Models/User');
 const Classroom = require('../Models/Classroom');
-const { isRoomAvailable,isTeacherAvailable,areStudentsAvailable } = require('../Controllers/planningController');
-const { checkDurationOfCourse } = require('../Controllers/validatePlanning');
-//const isRoomAvailable = require('../Controllers/planningController');
+const { getMaxWeeklyHoursForLevel } = require('../Controllers/validatePlanning');
 const axios = require('axios');
+const { set } = require('mongoose');
+
 const createAutomaticPlannings = async (req, res) => {
     try {
-        const { startOfWeek,endOfWeek,type } = req.params;
-        // Convertir les chaînes de caractères en objets Date
+        const { startOfWeek, endOfWeek, type } = req.params;
         const startDate = new Date(startOfWeek);
         const endDate = new Date(endOfWeek);
 
-        // Vérifier la validité de la plage de dates
         if (startDate >= endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             throw new Error('Invalid date range');
         }
-        // Récupérer tous les étudiants
+
         const students = await User.find({ role: 'client' });
         const teachers = await User.find({ role: 'prof' });
-       
-       const rooms = await Room.find();
-        // Liste pour stocker les plannings créés
+        const rooms = await Room.find();
         const createdPlannings = [];
-
-        // Boucle pour chaque jour de la semaine
+        const classroomlist = []; // Ensemble pour stocker les salles de classe sans redondance
+        let classroomSet = new Set();
+        let studentIndex = 0;
+        let classroomIndex = 0;
+        const classroomList = new Set();
         for (let currentDate = new Date(startDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
-            const date = currentDate.toISOString().split('T')[0]; // Format de la date
+            const date = currentDate.toISOString().split('T')[0];
 
-            // Boucle pour chaque créneau horaire de la journée
-            for (let startTime = 8; startTime < 18; startTime++) {
-                const endTime = startTime + 1; // Durée du cours d'une heure
-
-                // Vos validations
-                //const roomAvailable = await isRoomAvailable(rooms.id, date, startTime, endTime);
-                const RoomResponse = await axios.get(`http://localhost:9090/api/plannings/availability/room/${rooms[0]._id}/${date}/${startTime}/${endTime}`);
+            for (let startTime = 8; startTime < 11; startTime++) {
+                const endTime = startTime + 1;
+                const randomTeacher = teachers[Math.floor(Math.random() * teachers.length)];
+                
+                const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+                const RoomResponse = await axios.get(`http://localhost:9090/api/plannings/availability/room/${randomRoom._id}/${date}/${startTime}/${endTime}`);
                 const correctRoom = RoomResponse.data.isRoomAvailable;
-                console.log(correctRoom)
-                //const teacherAvailable = await isTeacherAvailable(teachers.id, date, startTime, endTime);
-                //const studentsAvailable = await areStudentsAvailables(students[0]._id, date, startTime, endTime);
-                //console.log(studentsAvailable)
-                //const correctDuration = await checkDurationOfCourse(startTime, endTime, type);
+
+                const Teacherresponse = await axios.get(`http://localhost:9090/api/plannings/availability/teacher/${randomTeacher._id}/${date}/${startTime}/${endTime}`);
+                const correctTeacher = Teacherresponse.data.isTeacherAvailable;
+
                 const DurationResponse = await axios.get(`http://localhost:9090/api/plannings/CheckDuration/${startTime}/${endTime}/${type}`);
                 const correctDuration = DurationResponse.data.correctDuration;
-                console.log(startTime+'//'+endTime+'//'+correctDuration)
-                // Vérification de toutes les conditions pour créer un planning
-                if (correctRoom && correctDuration) {
-                    // Créer le planning
-                    const planning = {
-                        "date":date,
-                        "startDate":startTime,
-                        "endDate":endTime,
-                        "roomId": rooms[0]._id,
-                        "teacherId": teachers[0]._id,
-                        "studentIds": students.map(student => student._id),
-                        "type":type
-                    };
-                    console.log(planning)
-                    createdPlannings.push(planning); // Ajouter le planning à la liste des plannings créés
+
+                if (studentIndex < students.length) {
+                    if (correctRoom && correctDuration && correctTeacher) {
+                        const student = students[studentIndex];
+                        const studentId = student._id;
+                        const classroomId = student.classroom; // Supposons que vous récupérez l'ID de la salle de classe pour chaque étudiant
+                        if (!classroomSet.has(classroomId)) {
+                            classroomSet.add(classroomId);
+                            classroomList.add(classroomId); // Add the classroom ID to the list set as well
+                        }
+                        const planning = {
+                            date,
+                            startTime,
+                            endTime,
+                            roomId: randomRoom._id,
+                            teacherId: randomTeacher._id,
+                            studentIds: studentId,
+                            type
+                        };
+                        createdPlannings.push(planning);
+                        studentIndex++;                 
+                    }
                 }
             }
         }
 
-        return res.json({ createdPlannings });; // Retourner la liste des plannings créés
+        const lastPlanning = createdPlannings[createdPlannings.length - 1];
+        
+        
+        const lastDate = lastPlanning.date;
+        console.log('set'+classroomSet.size)
+        classroomSet.forEach(async classroomId => {
+            classroomlist.push(classroomId) 
+            });
+        console.log('list'+classroomlist)   
+        for (let currentDate = new Date(lastDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+
+            const date = currentDate.toISOString().split('T')[0];
+            let lastEndTime = lastPlanning.endTime;
+            for (let startTime = lastEndTime; startTime < 20; startTime++) {
+                //console.log('aaa'+classroomSet.length)
+                if (classroomIndex < classroomlist.length){
+                    //console.log(classroomIndex)
+                    //.log(classroomSet[classroomIndex])
+                    // Récupérer la classe associée à ce groupe de students (classroom)
+                    const classroom = await Classroom.findById(classroomlist[classroomIndex]);
+                    //console.log(classroom)
+                
+                    // Récupérer les étudiants de ce groupe
+                    const students = await User.find({ classroom:classroomlist[classroomIndex]});
+                    //console.log(students)
+                    // Si la classe (classroom) n'a pas d'étudiants, passez à la suivante
+                    if (students.length === 0) {
+                        continue;
+                    }
+                
+                    // Calculer le nombre d'heures de cours pour ce groupe de students
+                    const maxWeeklyHours = getMaxWeeklyHoursForLevel(classroom.level); // Obtenez le nombre maximum d'heures par semaine pour ce niveau
+                
+                    // Si le groupe de students a atteint son quota d'heures hebdomadaires, passez à la suivante
+                    const classroomPlannings = createdPlannings.filter(planning => planning.classroomId === classroomlist[classroomIndex]);
+                    const weeklyHours = classroomPlannings.reduce((totalHours, planning) => {
+                        return totalHours + (planning.endTime - planning.startTime);
+                    }, 0);
+                
+                    if (weeklyHours >= maxWeeklyHours) {
+                        continue;
+                    }
+                
+                    const randomTeacher = teachers[Math.floor(Math.random() * teachers.length)];
+                    const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+                    
+                    // Utiliser l'heure de fin de ce dernier créneau horaire comme heure de début pour les plannings de type "solfège"
+                    const solfegeEndTime = startTime + (maxWeeklyHours / 60); 
+                    
+                    // Créer le planning pour ce groupe de students (classroom)
+                    const planning = {
+                        date,
+                        startTime,
+                        solfegeEndTime,
+                        roomId: randomRoom._id, 
+                        teacherId: randomTeacher._id,
+                        classroomId: classroomlist[classroomIndex], 
+                        type: 'solfège' // Vous pouvez définir le type de cours ici, par exemple "solfège"
+
+                    };
+                
+                    createdPlannings.push(planning);
+                    lastEndTime += solfegeEndTime;
+                    classroomIndex++; 
+                } 
+            }
+        }
+
+        return res.json({ createdPlannings });
     } catch (error) {
         console.error('Error creating automatic plannings:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
 
-/* const CheckStudents = async (req, res, next) => {
-    try {
-        const { studentIds, date, startTime, endTime } = req.params;
-        const response = await axios.get(`http://localhost:9090/api/plannings/availability/students/${studentIds}/${date}/${startTime}/${endTime}`);
-        const areStudentsAvailable = response.data.areStudentsAvailable;
-        req.areStudentsAvailable = areStudentsAvailable;
-        next();
-    } catch (error) {
-        console.error('Error checking student availability:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}; */
-module.exports = {createAutomaticPlannings
-   
-
-};
+module.exports = { createAutomaticPlannings };

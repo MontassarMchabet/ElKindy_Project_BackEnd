@@ -644,7 +644,7 @@ const editClient = async (req, res) => {
         const userId = req.params.id;
         const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
             parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
-            fatherOccupation, motherOccupation, isSubscribed, level
+            fatherOccupation, motherOccupation, isSubscribed, level,classroom
         } = req.body;
 
         const user = await User.findById(userId);
@@ -695,6 +695,9 @@ const editClient = async (req, res) => {
         }
         if (level) {
             user.level = level;
+        }
+        if (classroom) {
+            user.classroom = classroom;
         }
         if (isSubscribed) {
             user.isSubscribed = isSubscribed;
