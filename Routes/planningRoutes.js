@@ -17,5 +17,6 @@ router.get('/TotalIndividualStudy/:userId/:date/:type', validatePlanning.calcula
 router.get('/TotalStudyHours/:classroomId/:date/:startTime/:endTime', validatePlanning.calculateTotalStudyHours);
 router.get('/getallStudent', planningController.getPlanningWithStudentIds);
 router.get('/getByTeacherId/:teacherId', planningController.getPlanningWithTeacherId);
-router.post('/autoplanning/:startOfWeek/:endOfWeek/:type', AutoPlanning.createAutomaticPlannings);
+router.post('/autoplanning/:startOfWeek/:endOfWeek/:startTime/:endTime', AutoPlanning.createAutomaticPlannings);
+router.post('/SaveMoreplannnings', planningController.SaveMorePlannings);
 module.exports = router;

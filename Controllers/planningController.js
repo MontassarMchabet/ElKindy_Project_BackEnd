@@ -248,6 +248,24 @@ const getPlanningWithTeacherId = async (req, res) => {
         res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
     }
 };
+///////////// SaveMorePlannings after auto plannning  ///////////////////
+const SaveMorePlannings = async (req, res) => {
+    try {
+        const { plannings } = req.body;
+
+        if (!plannings || !Array.isArray(plannings)) {
+            return res.status(400).json({ error: 'Invalid data' });
+        }
+
+        // Enregistrer les plannings dans la base de données
+        const savedPlannings = await Planning.insertMany(plannings);
+
+        res.status(200).json({ savedPlannings });
+    } catch (error) {
+        console.error("Error saving plannings:", error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 module.exports = {
     createPlanning,
     getAllPlannings,
@@ -258,6 +276,7 @@ module.exports = {
     isTeacherAvailable,
     areStudentsAvailable,
     getPlanningWithStudentIds,
-    getPlanningWithTeacherId
+    getPlanningWithTeacherId,
+    SaveMorePlannings
 
 };
