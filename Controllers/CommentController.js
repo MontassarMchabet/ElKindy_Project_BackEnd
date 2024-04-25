@@ -43,6 +43,7 @@ async function getCommentbyid(req, res) {
     res.send(err);
   }
 }
+
 const deleteComment = asyncHandler(async (req, res) => {
     const {id} = req.params;
     try {
@@ -52,9 +53,36 @@ const deleteComment = asyncHandler(async (req, res) => {
       throw new Error(error);
     }
   });
+
+  // const deleteMyComment = asyncHandler(async (req, res) => {
+  //   const { id } = req.params;
+  //   const userId = "65df69dae61e837fa7eae0ec"; // Récupérer l'ID de l'utilisateur connecté
+  
+  //   try {
+  //     // Vérifier si le commentaire existe
+  //     const comment = await Comment.findById(id);
+  //     if (!comment) {
+  //       return res.status(404).json({ message: "Comment not found" });
+  //     }
+  
+  //     // Vérifier si l'utilisateur est l'auteur du commentaire
+  //     if (comment.user.toString() !== userId) {
+  //       return res.status(403).json({ message: "Unauthorized" });
+  //     }
+  
+  //     // Supprimer le commentaire de la base de données
+  //     await comment.remove();
+  
+  //     res.json({ message: "Comment deleted successfully" });
+  //   } catch (error) {
+  //     console.error("Error deleting comment:", error);
+  //     res.status(500).json({ message: "Error deleting comment" });
+  //   }
+  // });
+  
   const deleteMyComment = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const userId = req.user.id; // Récupérer l'ID de l'utilisateur connecté
+    const userId = "65df69dae61e837fa7eae0ec"; // Récupérer l'ID de l'utilisateur connecté
   
     try {
       // Vérifier si le commentaire existe
@@ -69,7 +97,7 @@ const deleteComment = asyncHandler(async (req, res) => {
       }
   
       // Supprimer le commentaire de la base de données
-      await comment.remove();
+      await Comment.findByIdAndDelete(id);
   
       res.json({ message: "Comment deleted successfully" });
     } catch (error) {
@@ -78,7 +106,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     }
   });
   
-
+  
 
 // const updateComment = asyncHandler(async (req, res) => {
 //     const { id } = req.params;
@@ -133,7 +161,8 @@ const updateComment = asyncHandler(async (req, res) => {
   const { id } = req.params; // Supposons que l'ID du commentaire soit envoyé dans le corps de la requête
   console.log("ID récupéré côté serveur :", id);
 
-  const userId = req.user.id; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
+  // const userId = req.user.id; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
+  const userId = "65df69dae61e837fa7eae0ec"; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
 
   try {
     // Trouver le commentaire par son ID

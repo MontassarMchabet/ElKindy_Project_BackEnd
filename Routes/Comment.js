@@ -20,6 +20,6 @@ router.put("/update/:id", commentController.updateComment);
 /* delete Comment */
 router.delete("/delete/:id", commentController.deleteComment);
 /* delete user Comment */
-router.delete("/deletemyComment/:id", commentController.deleteMyComment);
+router.delete("/deleteMyComment/:id", commentController.deleteMyComment);
 
 module.exports = router;
