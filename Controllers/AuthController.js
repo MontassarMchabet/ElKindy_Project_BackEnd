@@ -150,6 +150,7 @@ const register = async (req, res) => {
             username,
             isEmailVerified: false,
             role: 'client',
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
         });
         await newClient.save();
 
@@ -261,7 +262,7 @@ const registerClient = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
 
             role: 'client',
@@ -344,7 +345,7 @@ const registerAdmin = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
             role: 'admin',
 
@@ -431,7 +432,7 @@ const registerProf = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
             role: 'prof',
 
