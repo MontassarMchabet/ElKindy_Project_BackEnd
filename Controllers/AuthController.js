@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const sendEmail = require('../Controllers/NodeMailer');
 const fs = require('fs');
 const path = require('path');
+const HistorySubscription = require('../Models/HistorySubscription');
 const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
 const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
 const filePathThree = path.join(__dirname, '..', 'EmailTemplate', 'SendVerificationCode.html');
@@ -645,7 +646,7 @@ const editClient = async (req, res) => {
         const userId = req.params.id;
         const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
             parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
-            fatherOccupation, motherOccupation, isSubscribed, level,classroom
+            fatherOccupation, motherOccupation, isSubscribed, level, classroom
         } = req.body;
 
         const user = await User.findById(userId);
@@ -802,6 +803,162 @@ const resetPassword = async (req, res) => {
 }
 
 
+const updateSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subscription } = req.body;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.subscriptionType = subscription;
+        user.subscriptionDate = new Date();
+        user.isSubscribed = true;
+        await user.save();
+        console.log(user);
+        return res.json({ message: 'User subscription updated successfully' });
+    } catch (error) {
+        console.error('Error updating user subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const cancelSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.subscriptionType = 'Non';
+        user.subscriptionDate = new Date();
+        user.isSubscribed = false;
+        await user.save();
+    } catch (error) {
+        console.error('Error canceling user subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const addSubscriptionHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subscriptionType, subscriptionPrice } = req.body;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Calculate subscription end date based on subscription type and starting from subscription date
+        let subscriptionEndDate = new Date();
+        switch (subscriptionType) {
+            case 'monthly':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                break;
+            case 'yearly':
+                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+                break;
+            case '6 months':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 6);
+                break;
+            default:
+                console.error('Unexpected subscriptionType:', subscriptionType);
+                return res.status(400).json({ error: 'Invalid subscription type' });
+        }
+        const newHistorySubscription = new HistorySubscription({
+            client: id,
+            subscriptionType: subscriptionType,
+            subscriptionDate: new Date(),
+            subscriptionPrice: subscriptionPrice,
+            subscriptionStatus: 'active',
+            subscriptionEndDate: subscriptionEndDate
+        });
+        await newHistorySubscription.save();
+
+        return res.json({ message: 'User subscription history added successfully' });
+    } catch (error) {
+        console.error('Error adding history subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const cancelSubscriptionHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        console.log(user);
+        console.log(user.subscriptionType)
+        console.log(req.params);
+        // Calculate subscription end date based on subscription type and starting from subscription date
+        let subscriptionEndDate = new Date();
+        switch (user.subscriptionType) {
+            case 'monthly':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                break;
+            case 'yearly':
+                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+                break;
+            case '6 months':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 6);
+                break;
+            default:
+                console.error('Unexpected subscriptionType:', subscriptionType);
+                return res.status(400).json({ error: 'Invalid subscription type' });
+        }
+        let subscriptionPrice = 0;
+        if (user.subscriptionType === 'monthly') {
+            subscriptionPrice = 50;
+        } else if (user.subscriptionType === 'yearly') {
+            subscriptionPrice = 600;
+        } else if (user.subscriptionType === '6 months') {
+            subscriptionPrice = 300;
+        } else {
+            console.error('Unexpected subscriptionType:', subscriptionType);
+            return;
+        }
+        const newHistorySubscription = new HistorySubscription({
+            client: id,
+            subscriptionType: user.subscriptionType,
+            subscriptionDate: new Date(),
+            subscriptionPrice: subscriptionPrice,
+            subscriptionStatus: 'inactive',
+            subscriptionEndDate: subscriptionEndDate
+        });
+        await newHistorySubscription.save();
+
+        return res.json({ message: 'User subscription history added successfully' });
+    } catch (error) {
+        console.error('Error adding history subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const findAllHistorySubscriptions = async (req, res) => {
+    try {
+        const historySubscriptions = await HistorySubscription.find();
+        return res.json(historySubscriptions);
+    } catch (error) {
+        console.error('Error fetching history subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const findAllHistorySubscriptionByClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const historySubscriptions = await HistorySubscription.find({ client: id });
+        return res.json(historySubscriptions);
+    } catch (error) {
+        console.error('Error fetching history subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
@@ -813,6 +970,8 @@ module.exports = {
     editAdminProf, editClient,
     getUserById,
     resetPassword, forgotPasswordToken, updatePassword,
-    sendVerificationCode, hashVerificationCode, compareVerificationCode
+    sendVerificationCode, hashVerificationCode, compareVerificationCode,
 
+    updateSubscription, cancelSubscription, addSubscriptionHistory, cancelSubscriptionHistory,
+    findAllHistorySubscriptions, findAllHistorySubscriptionByClient
 }
