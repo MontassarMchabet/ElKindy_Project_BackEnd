@@ -832,6 +832,13 @@ const cancelSubscription = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
+        user.instrument = '';
+        user.otherInstruments = '';
+        user.level = 'Initiation';
+        user.parentCinNumber = 0;
+        user.parentPhoneNumber = 0;
+        user.fatherOccupation = '';
+        user.motherOccupation = '';
         user.subscriptionType = 'Non';
         user.subscriptionDate = new Date();
         user.isSubscribed = false;
@@ -892,9 +899,6 @@ const cancelSubscriptionHistory = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        console.log(user);
-        console.log(user.subscriptionType)
-        console.log(req.params);
         // Calculate subscription end date based on subscription type and starting from subscription date
         let subscriptionEndDate = new Date();
         switch (user.subscriptionType) {
@@ -960,6 +964,215 @@ const findAllHistorySubscriptionByClient = async (req, res) => {
     }
 }
 
+
+const calculateTotalIncome = async (req, res) => {
+    try {
+        const totalIncomeResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalIncome: { $sum: "$subscriptionPrice" }
+                }
+            }
+        ]);
+
+        const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].totalIncome : 0;
+        return res.json({ TotalIncome: totalIncome });
+    } catch (error) {
+        console.error('Error calculating total income:', error);
+        throw error;
+    }
+};
+
+const calculateTotalIncomeThisMonth = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // Month is zero-based, so add 1 to get the correct month
+
+        const totalIncomeResult = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, month] },
+                            { $eq: [{ $year: "$subscriptionDate" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalIncome: { $sum: "$subscriptionPrice" }
+                }
+            }
+        ]);
+
+        const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].totalIncome : 0;
+        return res.json({ TotalIncomeThisMonth: totalIncome });
+    } catch (error) {
+        console.error('Error calculating total income:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateTotalSubscriptionsThisMonth = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        // Get the total subscriptions for the current month
+        const totalSubscriptionsCurrentMonth = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, month] },
+                            { $eq: [{ $year: "$subscriptionDate" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalSubscriptions: { $sum: 1 }
+                }
+            }
+        ]);
+        const totalCurrentMonth = totalSubscriptionsCurrentMonth.length > 0 ? totalSubscriptionsCurrentMonth[0].totalSubscriptions : 0;
+        // Get the total subscriptions for the previous month
+        const previousMonth = month === 1 ? 12 : month - 1;
+        const previousYear = month === 1 ? year - 1 : year;
+        const totalSubscriptionsPreviousMonth = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, previousMonth] },
+                            { $eq: [{ $year: "$subscriptionDate" }, previousYear] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalSubscriptions: { $sum: 1 }
+                }
+            }
+        ]);
+        const totalPreviousMonth = totalSubscriptionsPreviousMonth.length > 0 ? totalSubscriptionsPreviousMonth[0].totalSubscriptions : 0;
+        // Calculate the percentage increase
+        const percentageIncrease = totalPreviousMonth !== 0 ? ((totalCurrentMonth - totalPreviousMonth) / totalPreviousMonth) * 100 : 0;
+
+        return res.json({ totalSubscriptions: totalCurrentMonth, percentageIncrease });
+    } catch (error) {
+        console.error('Error calculating total subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+
+const calculateTotalClients = async (req, res) => {
+    try {
+        const totalClientsResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$client",
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalClients: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const totalClients = totalClientsResult.length > 0 ? totalClientsResult[0].totalClients : 0;
+
+        return res.json({ TotalClients: totalClients });
+    } catch (error) {
+        console.error('Error calculating total clients:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateTopClients = async (req, res) => {
+    try {
+        const topClientsResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$client",
+                    totalSubscriptions: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { totalSubscriptions: -1 }
+            },
+            {
+                $limit: 5
+            }
+        ]);
+
+        return res.json({ TopClients: topClientsResult });
+    } catch (error) {
+        console.error('Error calculating top clients:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+const calculateSubscriptionStatus = async (req, res) => {
+    try {
+        const subscriptionStatusResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$subscriptionStatus",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const subscriptionStatus = {};
+        subscriptionStatusResult.forEach((status) => {
+            subscriptionStatus[status._id] = status.count;
+        });
+
+        return res.json({ SubscriptionStatus: subscriptionStatus });
+    } catch (error) {
+        console.error('Error calculating subscription status:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateSubscriptionByType = async (req, res) => {
+    try {
+        const subscriptionByTypeResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$subscriptionType",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const subscriptionByType = {};
+        subscriptionByTypeResult.forEach((subscription) => {
+            subscriptionByType[subscription._id] = subscription.count;
+        });
+
+        return res.json({ subscriptionByType });
+    } catch (error) {
+        console.error('Error calculating subscription by type:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
     loginWithEmail, loginWithUsername,
@@ -973,5 +1186,9 @@ module.exports = {
     sendVerificationCode, hashVerificationCode, compareVerificationCode,
 
     updateSubscription, cancelSubscription, addSubscriptionHistory, cancelSubscriptionHistory,
-    findAllHistorySubscriptions, findAllHistorySubscriptionByClient
+    findAllHistorySubscriptions, findAllHistorySubscriptionByClient,
+
+    calculateTotalIncome, calculateTotalIncomeThisMonth, 
+    calculateTotalSubscriptionsThisMonth, calculateTotalClients, calculateTopClients,
+    calculateSubscriptionStatus, calculateSubscriptionByType
 }

@@ -47,6 +47,14 @@ router.post('/addSubscriptionHistory/:id', AuthController.addSubscriptionHistory
 router.post('/cancelSubscriptionHistory/:id', AuthController.cancelSubscriptionHistory)
 router.get('/getAllHistorySubscriptions', AuthController.findAllHistorySubscriptions)
 router.get('/getHistorySubscriptionByClient/:id', AuthController.findAllHistorySubscriptionByClient)
+router.get('/subscription/totalincome', AuthController.calculateTotalIncome)
+router.get('/subscription/totalincomeThisMonth', AuthController.calculateTotalIncomeThisMonth)
+router.get('/subscription/SubscriptionThisMonth', AuthController.calculateTotalSubscriptionsThisMonth)
+router.get('/subscription/TotalClients', AuthController.calculateTotalClients)
+router.get('/subscription/topclients', AuthController.calculateTopClients)
+router.get('/subscription/status', AuthController.calculateSubscriptionStatus)
+router.get('/subscription/type', AuthController.calculateSubscriptionByType)
+
 
 // Others
 router.post('/refreshtoken', VerifyRefreshToken)
