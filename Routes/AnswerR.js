@@ -61,4 +61,23 @@ router.get('/fetch-answer-pdf-by-exam/:examId', async (req, res) => {
     }
 });
 
+router.get('/fetch-pdf', async (req, res) => {
+    const pdfUrl = req.query.url; // Get PDF URL from query parameter
+
+    try {
+        // Fetch PDF file from the external URL
+        const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+
+        // Set the appropriate headers for the PDF response
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="downloaded.pdf"');
+
+        // Send the PDF file as the response
+        res.send(response.data);
+    } catch (error) {
+        console.error('Error fetching PDF:', error);
+        res.status(500).send('Error fetching PDF');
+    }
+});
+
 module.exports = router;
