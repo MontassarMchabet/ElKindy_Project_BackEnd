@@ -5,6 +5,11 @@ const product = require("../Models/product");
 const Cupon = require("../models/Cupon");
 const Order = require("../models/Order");
 const uniqid = require("uniqid");
+const sendEmail = require('../Controllers/NodeMailer');
+const fs = require('fs');
+const path = require('path');
+const filePath = path.join(__dirname, '..', 'EmailTemplate', 'SendOrderEmail.html');
+
 
 
 
@@ -45,6 +50,8 @@ const getMyOrder = expressAsyncHandler(async (req, res) => {
       throw new Error(error);
   }
 });
+
+
 
 const getAllOrders = expressAsyncHandler(async (req, res) => {
     try {
@@ -93,7 +100,26 @@ const getSingleOrder = expressAsyncHandler(async (req, res) => {
   }
 });
 
+const sendMail = async (req, res) => {
+    const { email, username } = req.body;
+    try {
+        const htmlTemplate = fs.readFileSync(filePath, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ email }}', email)
+            .replace('{{ username }}', username);
+        const data = {
+            to: email,
+            subject: " Confirmation of Your Recent Order",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
 
+        res.status(200).json({ message: 'Mail sent successfully'});
+    } catch (error) {
+        console.error('Error sending Mail:', error);
+        res.status(500).json({ message: 'Error sending Mail' });
+    }
+}
 
 module.exports = {
     createOrder,
@@ -103,4 +129,5 @@ module.exports = {
     getMyOrder,
     deleteOrder,
     getSingleOrder,
+    sendMail,
 };
