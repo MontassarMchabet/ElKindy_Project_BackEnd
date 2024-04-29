@@ -1151,21 +1151,58 @@ const calculateSubscriptionStatus = async (req, res) => {
 
 const calculateSubscriptionByType = async (req, res) => {
     try {
+        // Create an array containing all months (1 to 12)
+        const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+
         const subscriptionByTypeResult = await HistorySubscription.aggregate([
             {
+                $match: {
+                    createdAt: { $exists: true, $ne: null } // Ensure createdAt field exists and is not null
+                }
+            },
+            {
                 $group: {
-                    _id: "$subscriptionType",
+                    _id: {
+                        month: { $month: "$createdAt" }, // Extract the month from the createdAt field
+                        subscriptionType: "$subscriptionType"
+                    },
                     count: { $sum: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id.month", // Group by month
+                    types: {
+                        $push: {
+                            type: "$_id.subscriptionType",
+                            count: "$count"
+                        }
+                    }
                 }
             }
         ]);
 
-        const subscriptionByType = {};
-        subscriptionByTypeResult.forEach((subscription) => {
-            subscriptionByType[subscription._id] = subscription.count;
+        // Create a map to store the subscription counts for each month
+        const subscriptionByMonth = new Map();
+
+        // Initialize counts for all months to 0
+        allMonths.forEach(month => subscriptionByMonth.set(month, {}));
+
+        // Populate the map with the actual counts
+        subscriptionByTypeResult.forEach(result => {
+            const month = result._id;
+            const counts = {};
+            result.types.forEach(type => counts[type.type] = type.count);
+            subscriptionByMonth.set(month, counts);
         });
 
-        return res.json({ subscriptionByType });
+        // Convert the map to a plain object
+        const subscriptionByMonthObject = {};
+        subscriptionByMonth.forEach((value, key) => {
+            subscriptionByMonthObject[key] = value;
+        });
+
+        return res.json({ subscriptionByMonth: subscriptionByMonthObject });
     } catch (error) {
         console.error('Error calculating subscription by type:', error);
         return res.status(500).json({ error: 'Internal server error' });
