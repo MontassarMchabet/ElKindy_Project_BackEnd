@@ -82,8 +82,9 @@ const deleteComment = asyncHandler(async (req, res) => {
   
   const deleteMyComment = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const userId = "65df69dae61e837fa7eae0ec"; // Récupérer l'ID de l'utilisateur connecté
-  
+    // const userId = "65df69dae61e837fa7eae0ec"; // Récupérer l'ID de l'utilisateur connecté
+    const userId= req.body.user;
+    console.log("ID usseerr delete :", userId);
     try {
       // Vérifier si le commentaire existe
       const comment = await Comment.findById(id);
@@ -158,15 +159,16 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 
 const updateComment = asyncHandler(async (req, res) => {
-  const { id } = req.params; // Supposons que l'ID du commentaire soit envoyé dans le corps de la requête
+  const { id } = req.params; // Récupérer l'ID du commentaire depuis les paramètres de la requête
   console.log("ID récupéré côté serveur :", id);
 
-  // const userId = req.user.id; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
-  const userId = "65df69dae61e837fa7eae0ec"; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
+  // const userId = "65df69dae61e837fa7eae0ec"; // ID fictif de l'utilisateur (à remplacer par la vraie méthode pour obtenir l'ID de l'utilisateur)
+  const userId= req.body.user; 
+  console.log("ID usseerr récupéré côté serveur :", userId);
 
   try {
     // Trouver le commentaire par son ID
-    const comment = await Comment.findById(id);
+    let comment = await Comment.findById(id);
 
     // Vérifier si le commentaire existe
     if (!comment) {
@@ -178,19 +180,57 @@ const updateComment = asyncHandler(async (req, res) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Mettre à jour le contenu du commentaire
-    comment.content = req.body.content; // Supposons que le contenu à mettre à jour soit envoyé dans le corps de la requête
+    // Mettre à jour le contenu du commentaire avec la nouvelle valeur
+    comment.comment = req.body.comment; // Utiliser req.body.comment pour récupérer la nouvelle valeur du commentaire
 
     // Sauvegarder le commentaire mis à jour dans la base de données
-    const updatedComment = await comment.save();
+    comment = await comment.save();
 
-    // Renvoyer l'ID dans la réponse
-    res.json({ updatedComment, id });
+    // Renvoyer le commentaire mis à jour dans la réponse
+    res.json({ updatedComment: comment });
   } catch (error) {
     console.error("Error updating comment:", error);
     res.status(500).json({ message: "Error updating comment" });
   }
 });
+
+// const updateComment = asyncHandler(async (req, res) => {
+//   const { id } = req.params; // Supposons que l'ID du commentaire soit envoyé dans le corps de la requête
+//   console.log("ID récupéré côté serveur :", id);
+
+//   // const userId = req.user.id; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
+//   const userId = "65df69dae61e837fa7eae0ec"; // Utilisez req.user.id pour récupérer l'ID de l'utilisateur
+
+//   try {
+//     // Trouver le commentaire par son ID
+//     const comment = await Comment.findById(id);
+
+//     // Vérifier si le commentaire existe
+//     if (!comment) {
+//       return res.status(404).json({ message: "Comment not found" });
+//     }
+
+//     // Vérifier si l'utilisateur est l'auteur du commentaire
+//     if (comment.user.toString() !== userId) {
+//       return res.status(403).json({ message: "Unauthorized" });
+//     }
+
+//     // Mettre à jour le contenu du commentaire
+//     comment.content = req.body.content; // Supposons que le contenu à mettre à jour soit envoyé dans le corps de la requête
+
+//     // Sauvegarder le commentaire mis à jour dans la base de données
+//     const updatedComment = await comment.save();
+//     console.log("comment :", comment);
+//     console.log("updatedComment :", updatedComment);
+
+
+//     // Renvoyer l'ID dans la réponse
+//     res.json({ updatedComment, id });
+//   } catch (error) {
+//     console.error("Error updating comment:", error);
+//     res.status(500).json({ message: "Error updating comment" });
+//   }
+// });
 
 
 
