@@ -479,12 +479,12 @@ const registerProf = async (req, res) => {
 const loginWithEmail = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password);
+
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         const user = await User.findOne({ email });
-        console.log(user);
+
         if (!user) {
             return res.status(401).json({ message: 'Invalid email' });
         }
@@ -816,7 +816,7 @@ const updateSubscription = async (req, res) => {
         user.subscriptionDate = new Date();
         user.isSubscribed = true;
         await user.save();
-        console.log(user);
+
         return res.json({ message: 'User subscription updated successfully' });
     } catch (error) {
         console.error('Error updating user subscription:', error);
@@ -894,7 +894,6 @@ const addSubscriptionHistory = async (req, res) => {
 const cancelSubscriptionHistory = async (req, res) => {
     try {
         const { id } = req.params;
-
         let user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -912,7 +911,7 @@ const cancelSubscriptionHistory = async (req, res) => {
                 subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 6);
                 break;
             default:
-                console.error('Unexpected subscriptionType:', subscriptionType);
+                console.error('Unexpected subscriptionType:', user.subscriptionType);
                 return res.status(400).json({ error: 'Invalid subscription type' });
         }
         let subscriptionPrice = 0;
@@ -923,7 +922,7 @@ const cancelSubscriptionHistory = async (req, res) => {
         } else if (user.subscriptionType === '6 months') {
             subscriptionPrice = 300;
         } else {
-            console.error('Unexpected subscriptionType:', subscriptionType);
+            console.error('Unexpected subscriptionType:', user.subscriptionType);
             return;
         }
         const newHistorySubscription = new HistorySubscription({
@@ -1137,11 +1136,27 @@ const calculateSubscriptionStatus = async (req, res) => {
             }
         ]);
 
-        const subscriptionStatus = {};
+        // Initialize subscriptionStatus with default values
+        let subscriptionStatus = { active: 0, inactive: 0 };
+
+        // Iterate through the result and update subscriptionStatus accordingly
         subscriptionStatusResult.forEach((status) => {
-            subscriptionStatus[status._id] = status.count;
+            if (status._id === 'active') {
+                subscriptionStatus.active = status.count;
+            } else if (status._id === 'inactive') {
+                subscriptionStatus.inactive = status.count;
+            }
         });
 
+        // Check if either active or inactive status is null and set count to 0 if null
+        if (subscriptionStatus.active === null) {
+            subscriptionStatus.active = 0;
+        }
+        if (subscriptionStatus.inactive === null) {
+            subscriptionStatus.inactive = 0;
+        }
+
+        // Return the subscriptionStatus object in the response
         return res.json({ SubscriptionStatus: subscriptionStatus });
     } catch (error) {
         console.error('Error calculating subscription status:', error);
@@ -1225,7 +1240,7 @@ module.exports = {
     updateSubscription, cancelSubscription, addSubscriptionHistory, cancelSubscriptionHistory,
     findAllHistorySubscriptions, findAllHistorySubscriptionByClient,
 
-    calculateTotalIncome, calculateTotalIncomeThisMonth, 
+    calculateTotalIncome, calculateTotalIncomeThisMonth,
     calculateTotalSubscriptionsThisMonth, calculateTotalClients, calculateTopClients,
     calculateSubscriptionStatus, calculateSubscriptionByType
 }
