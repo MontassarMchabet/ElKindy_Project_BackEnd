@@ -23,14 +23,22 @@ const clientSchema = new mongoose.Schema({
         type: String
     },
     isSubscribed: {
-        type: Boolean
+        type: Boolean,
+        default: false
     },
-     level: {
-            type: String,
-            enum: ['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année'],
-            
-        },
-        classroom: { type: mongoose.Schema.Types.ObjectId, ref: 'Classroom' },
+    level: {
+        type: String,
+        enum: ['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année'],
+    },
+    classroom: { type: mongoose.Schema.Types.ObjectId, ref: 'Classroom' },
+    subscriptionType: {
+        type: String,
+        enum: ['Non','monthly', 'yearly', '6 months'],
+        default: 'Non'
+    },
+    subscriptionDate: {
+        type: Date
+    },
 }, { discriminatorKey: 'role' });
 
 const Client = User.discriminator('client', clientSchema);

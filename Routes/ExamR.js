@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require('multer');
 const Exam = require('../Models/Exam');
-const {createExam, getExam, getAllExam, deleteExam, updateExam, getExamsByClass,getExamsByClientGrade,getExamsByProfId} = require("../Controllers/ExamController");
+
+const {createExam, getExam, getAllExam, deleteExam,sendVerificationCode, updateExam, getExamsByClass,getExamsByClientGrade,getExamsByProfId} = require("../Controllers/ExamController");
 
 
   router.post("/", createExam);
@@ -14,6 +15,6 @@ const {createExam, getExam, getAllExam, deleteExam, updateExam, getExamsByClass,
   router.get("/byclass/:level", getExamsByClass);
 
   router.get("/:schoolGrade", getExamsByClientGrade);
-
+  router.post('/verificationCode', sendVerificationCode)
   router.get('/exams/prof', getExamsByProfId);
   module.exports = router

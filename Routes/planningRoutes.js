@@ -16,8 +16,9 @@ router.get('/availability/studends/:studentIds/:date/:startTime/:endTime', plann
 router.get('/CheckDuration/:startTime/:endTime/:type', validatePlanning.CheckDurationOfCourse);
 router.get('/TotalIndividualStudy/:userId/:date/:type', validatePlanning.calculateTotalIndividualStudy);
 router.get('/TotalStudyHours/:classroomId/:date/:startTime/:endTime', validatePlanning.calculateTotalStudyHours);
-router.get('/getallStudent', planningController.getPlanningWithStudentIds);
+router.get('/getallStudent/:studentId', planningController.getPlanningWithStudentIds);
 router.get('/getByTeacherId/:teacherId', planningController.getPlanningWithTeacherId);
+
 router.post('/autoplanning/:startOfWeek/:endOfWeek/:startTime/:endTime', AutoPlanning.createAutomaticPlannings);
 router.post('/SaveMoreplannnings', planningController.SaveMorePlannings);
 router.get('/GetStudentsWithClassroomAndId/:studentIds', planningController.GetStudentsWithClassroomAndId);
@@ -86,5 +87,7 @@ router.get('/meetings/participant/:participantId', async (req, res) => {
 });
 
 
-  
+router.post('/autoplanning/:startOfWeek/:endOfWeek/:type', AutoPlanning.createAutomaticPlannings);
+router.put('/updateevaluation/:id', planningController.updatePlanning2);
+
 module.exports = router;
