@@ -4,8 +4,9 @@ const AuthController = require('../Controllers/AuthController')
 const decodeToken = require('../Helpers/DecodeToken')
 const VerifyRefreshToken = require('../Helpers/RefreshTokenEndpoint')
 const { authMiddleware, adminMiddleware } = require('../Middleware/Authorization');
+const User = require('../Models/User');
 
-// Register
+
 router.post('/register', AuthController.registerClient)
 router.post('/registerClient', AuthController.registerClient)
 router.post('/registerAdmin', AuthController.registerAdmin)
@@ -40,6 +41,20 @@ router.post('/verificationCode', AuthController.sendVerificationCode)
 router.post('/hashverificationcode', AuthController.hashVerificationCode)
 router.post('/verifycode', AuthController.compareVerificationCode)
 
+
+
+router.get('/users/:level', async (req, res) => {
+    const level = req.params.level;
+  
+    try {
+      const users = await User.find({ level: level }).exec();
+      res.json(users);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred' });
+    }
+  });
+
 // Subscription
 router.put('/updateSubscription/:id', AuthController.updateSubscription)
 router.put('/cancelSubscription/:id', AuthController.cancelSubscription)
@@ -60,5 +75,6 @@ router.get('/subscription/type', AuthController.calculateSubscriptionByType)
 router.post('/refreshtoken', VerifyRefreshToken)
 router.delete('/deleteUser/:id', authMiddleware, adminMiddleware, AuthController.deleteUser)
 router.get('/user/:id', AuthController.getUserById)
+
 
 module.exports = router

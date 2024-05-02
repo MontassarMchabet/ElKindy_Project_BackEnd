@@ -10,6 +10,7 @@ const planningSchema = new mongoose.Schema({
   teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   classroomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Classroom' },
   studentIds: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  evaluation: { type: String},
   
   
 });
