@@ -147,9 +147,6 @@ const updateProduct = asyncHandler(async (req, res) => {
 const addToWishlist = asyncHandler(async (req, res) => {
   const _id = req.params.idUser;
   const prodId = req.body;
-  console.log(_id);
-  console.log(prodId);
-  //console.log(req);
   try {
     const user = await User.findById(_id);
     const prodObjectId = new mongoose.Types.ObjectId(prodId.prodId);
@@ -177,7 +174,7 @@ const addToWishlist = asyncHandler(async (req, res) => {
 });
 
 const getWishlist = asyncHandler(async (req, res) => {
-  const  _id  = req.params.idUser;
+  const _id = req.params.idUser;
   try {
     const findUser = await User.findById(_id).populate("wishlist");
     res.json(findUser);
@@ -188,8 +185,8 @@ const getWishlist = asyncHandler(async (req, res) => {
 
 
 const rating = asyncHandler(async (req, res) => {
-  const  _id  = req.params.idUser;
-  const { star, prodId, comment } = req.body;
+  const _id = req.params.idUser;
+  const { star, prodId, comment, score } = req.body;
   try {
     const product = await Product.findById(prodId);
     let alreadyRated = product.ratings.find((userId) => userId.postedby.toString() === _id.toString());
@@ -199,7 +196,7 @@ const rating = asyncHandler(async (req, res) => {
           ratings: { $elemMatch: alreadyRated },
         },
         {
-          $set: { "ratings.$.star": star, "ratings.$.comment": comment },
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.score": score },
         },
         {
           new: true,
@@ -213,6 +210,7 @@ const rating = asyncHandler(async (req, res) => {
             ratings: {
               star: star,
               comment: comment,
+              score: score,
               postedby: _id,
             },
           },
@@ -227,11 +225,16 @@ const rating = asyncHandler(async (req, res) => {
     let ratingsum = getallratings.ratings
       .map((item) => item.star)
       .reduce((prev, curr) => prev + curr, 0);
+    let ratingscore = getallratings.ratings
+      .map((item) => item.score)
+      .reduce((prev, curr) => prev + curr, 0);
     let actualRating = Math.round(ratingsum / totalRating);
+    let actualScore = Math.round(ratingscore / totalRating);
     let finalproduct = await Product.findByIdAndUpdate(
       prodId,
       {
         totalrating: actualRating,
+        totalscore: actualScore,
       },
       { new: true }
     ).populate("ratings.postedby");
