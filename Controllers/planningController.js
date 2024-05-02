@@ -1,6 +1,7 @@
 const Planning = require('../Models/Planning');
 const mongoose = require('mongoose');
 const User = require('../Models/User');
+const { sendNotification } = require('./NotificationController'); 
 //////////////////////// create ///////////////////
 
 const isRoomAvailable = async (req, res) => {
@@ -50,7 +51,7 @@ const areStudentsAvailable = async (req, res) => {
         const existingPlanningForStudents = await Planning.findOne(query);
         if (existingPlanningForStudents) {
             return res.json({ areStudentsAvailable: false });
-        }
+}
 
         return res.json({ areStudentsAvailable: true });
 
@@ -184,16 +185,17 @@ const deletePlanning = async (req, res) => {
 ///////////////////////// updatePlanning ////////////////////////
 const updatePlanning = async (req, res) => {
     try {
-        // Récupérer l'ID du planning à mettre à jour à partir des paramètres de la requête
+        // Récupérer l'ID du planning à mettre à jour
         const { id } = req.params;
         
-        const {  date, startDate, endDate, roomId, teacherId, type,classroomId } = req.body;
-        let updatedPlanning;
+        const { date, startDate, endDate, roomId, teacherId, type, classroomId, studentIds } = req.body;
 
+        let updatedPlanning;
+        let recipients = [];
+
+        // Mettre à jour le planning
         if (type === "instrument") {
-            const { studentIds } = req.body;
             updatedPlanning = await Planning.findByIdAndUpdate(id, {
-            
                 date,
                 startDate,
                 endDate,
@@ -201,10 +203,12 @@ const updatePlanning = async (req, res) => {
                 teacherId,
                 studentIds
             }, { new: true });
-        };
-        if (type === "solfège")  {
+
+            recipients.push(...studentIds);
+        }
+
+        if (type === "solfège") {
             updatedPlanning = await Planning.findByIdAndUpdate(id, {
-            
                 date,
                 startDate,
                 endDate,
@@ -212,13 +216,20 @@ const updatePlanning = async (req, res) => {
                 teacherId,
                 classroomId
             }, { new: true });
-            
+
+            // Vous pouvez également inclure des étudiants par classe ici
         }
 
-        // Vérifier si le planning a été trouvé et mis à jour
+        // Vérifier si le planning a été mis à jour
         if (!updatedPlanning) {
             return res.status(404).json({ message: "Planning non trouvé." });
         }
+
+        // Émettre des notifications
+        const message = `Votre planning a été modifié pour le ${date} de ${startDate} à ${endDate}.`;
+        recipients.forEach((userId) => {
+            sendNotification(io, userId, message);
+        });
 
         res.status(200).json({ message: "Planning mis à jour avec succès.", updatedPlanning });
     } catch (error) {
@@ -237,6 +248,7 @@ const getPlanningWithStudentIds = async (req, res) => {
         res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
     }
 };
+
 const getPlanningWithTeacherId = async (req, res) => {
     try {
         const { teacherId } = req.params;
@@ -266,6 +278,30 @@ const SaveMorePlannings = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+const GetStudentsWithClassroomAndId = async (req, res) => {
+    try {
+        const { studentIds } = req.params;
+        const student = await User.findById(studentIds);
+        const classroom = student.classroom;
+
+        const query = {
+            
+            $or: [
+                { $and: [{ studentIds: studentIds }, { classroomId: { $exists: false } }] },
+                { $and: [{ classroomId: classroom }, { studentIds: { $exists: false } }] }
+            ]
+        };
+
+        const existingPlanningForStudents = await Planning.find(query);
+        res.status(200).json({ existingPlanningForStudents });
+
+    } catch (error) {
+        console.error('Error checking student availability:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     createPlanning,
     getAllPlannings,
@@ -277,6 +313,7 @@ module.exports = {
     areStudentsAvailable,
     getPlanningWithStudentIds,
     getPlanningWithTeacherId,
-    SaveMorePlannings
+    SaveMorePlannings,
+    GetStudentsWithClassroomAndId
 
 };

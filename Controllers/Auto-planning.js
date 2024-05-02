@@ -25,7 +25,8 @@ const createAutomaticPlannings = async (req, res) => {
             return res.status(400).json({ error: 'Invalid date range' });
         }
 
-        const students = await User.find({ role: 'client' });
+        const students = await User.find({ role: 'client', $and:[{classroom:{$exists: true}}]});
+    
         const teachers = await User.find({ role: 'prof' });
         const rooms = await Room.find();
 
@@ -34,7 +35,10 @@ const createAutomaticPlannings = async (req, res) => {
         }
 
         const createdPlannings = [];
+        console.log('students'+students)
+
         const uniqueClassroomList = [...new Set(students.map(student => student.classroom.toString()))];
+        console.log('uniqueClassroomList'+uniqueClassroomList)
         let studentIndex = 0;
         let classroomIndex = 0;
 

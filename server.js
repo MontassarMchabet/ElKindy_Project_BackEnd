@@ -5,13 +5,14 @@ const answer = require('./Routes/AnswerR');
 const note = require('./Routes/NoteR');
 const UploadImage = require('./Controllers/UploadImage');
 const quizz = require('./Routes/QuizR');
-const planningRouter = require('./routes/planningRoutes');
+const planningRouter = require('./Routes/planningRoutes');
 const CourseRouter = require('./Routes/CourseRoutes');
 const RoomRouter = require('./Routes/RoomRoutes');
 
 const classroomRoutes = require('./Routes/classroomRoutes');
 var cors = require('cors')
-
+const http = require("http"); // Utilisé pour créer le serveur HTTP
+const socketIO = require("socket.io"); // Importer Socket.IO
 const eventRouter = require('./Routes/Event');
 const commentRouter = require('./Routes/Comment');
 const ticketRouter = require('./Routes/Ticket');
@@ -28,7 +29,17 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 var cors = require('cors')
 var app = express()
-
+const server = http.createServer(app); // Créez le serveur HTTP
+const io = socketIO(server); // Créez le serveur Socket.IO
+io.on("connection", (socket) => {
+    console.log("Un utilisateur est connecté");
+  
+    socket.on("disconnect", () => {
+      console.log("Un utilisateur s'est déconnecté");
+    });
+  
+    // Autres événements Socket.IO que vous voulez gérer
+  });
 
 app.use(cookieParser());
 app.use(express.json());
