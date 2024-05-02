@@ -3,6 +3,10 @@ const asyncHandler = require("express-async-handler");
 const axios = require("axios");
 const Client = require('../Models/Client');
 const Prof = require('../Models/Prof')
+const fs = require('fs');
+const path = require('path');
+const sendEmail = require('../Controllers/NodeMailer');
+const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
 
 const createExam = asyncHandler(async (req, res) => {
   try {
@@ -53,6 +57,27 @@ const getExam = asyncHandler(async (req, res) => {
   });
 
 
+  const sendVerificationCode = async (req, res) => {
+    const { email, username } = req.body;
+    try {
+        
+        const htmlTemplate = fs.readFileSync(filePath, 'utf8');
+        const emailContent = htmlTemplate
+            .replace('{{ email }}', email)
+            .replace('{{ username }}', username)
+        const data = {
+            to: email,
+            subject: "Hi there! Verify your email address!",
+            html: emailContent
+        };
+        await sendEmail(data, req, res);
+
+        res.status(200).json({ message: 'Exam email notification sent successfully' });
+    } catch (error) {
+        console.error('Error sending Exam email notification :', error);
+        res.status(500).json({ message: 'Error sending Exam email notification ' });
+    }
+};
 
   const deleteExam = asyncHandler(async (req, res) => {
     const {id} = req.params;
@@ -155,4 +180,5 @@ module.exports = {
     getExamsByClass,
     getExamsByClientGrade,
     getExamsByProfId,
+    sendVerificationCode,
 };

@@ -4,7 +4,7 @@ const AuthController = require('../Controllers/AuthController')
 const decodeToken = require('../Helpers/DecodeToken')
 const VerifyRefreshToken = require('../Helpers/RefreshTokenEndpoint')
 const { authMiddleware, adminMiddleware } = require('../Middleware/Authorization');
-
+const User = require('../Models/User');
 
 router.post('/register', AuthController.registerClient)
 router.post('/registerClient', AuthController.registerClient)
@@ -52,5 +52,18 @@ router.put('/passwordReset/:token', AuthController.resetPassword)
 router.post('/verificationCode', AuthController.sendVerificationCode)
 router.post('/hashverificationcode', AuthController.hashVerificationCode)
 router.post('/verifycode', AuthController.compareVerificationCode)
+
+
+router.get('/users/:level', async (req, res) => {
+    const level = req.params.level;
+  
+    try {
+      const users = await User.find({ level: level }).exec();
+      res.json(users);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred' });
+    }
+  });
 
 module.exports = router

@@ -226,17 +226,35 @@ const updatePlanning = async (req, res) => {
         res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour du planning." });
     }
 };
-const getPlanningWithStudentIds = async (req, res) => {
-    try {
-        // Recherchez les plannings avec le champ studentIds
-        const planningsWithStudentIds = await Planning.find({ studentIds: { $exists: true } });
 
-        res.status(200).json(planningsWithStudentIds);
+const updatePlanning2 = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { evaluation } = req.body;
+  
+      const updatedPlanning = await Planning.findByIdAndUpdate(id, { evaluation }, { new: true });
+  
+      if (!updatedPlanning) {
+        return res.status(404).json({ message: "Planning not found." });
+      }
+  
+      res.status(200).json({ message: "Planning updated successfully.", updatedPlanning });
     } catch (error) {
-        console.error("Erreur lors de la recherche des plannings :", error);
-        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+      console.error("Error updating planning:", error);
+      res.status(500).json({ message: "An error occurred while updating the planning." });
     }
-};
+  };
+  const getPlanningWithStudentIds = async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const plannings = await Planning.find({ studentIds: studentId });
+      res.status(200).json(plannings);
+    } catch (error) {
+      console.error('Error getting plannings by student ID:', error);
+      res.status(500).json({ message: 'An error occurred while getting plannings.' });
+    }
+  };
+
 const getPlanningWithTeacherId = async (req, res) => {
     try {
         const { teacherId } = req.params;
@@ -258,6 +276,7 @@ module.exports = {
     isTeacherAvailable,
     areStudentsAvailable,
     getPlanningWithStudentIds,
-    getPlanningWithTeacherId
-
+    getPlanningWithTeacherId,
+    updatePlanning2,
+    
 };

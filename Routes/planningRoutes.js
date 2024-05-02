@@ -18,4 +18,5 @@ router.get('/TotalStudyHours/:classroomId/:date/:startTime/:endTime', validatePl
 router.get('/getallStudent', planningController.getPlanningWithStudentIds);
 router.get('/getByTeacherId/:teacherId', planningController.getPlanningWithTeacherId);
 router.post('/autoplanning/:startOfWeek/:endOfWeek/:type', AutoPlanning.createAutomaticPlannings);
+router.put('/updateevaluation/:id', planningController.updatePlanning2);
 module.exports = router;
