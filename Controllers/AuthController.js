@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const sendEmail = require('../Controllers/NodeMailer');
 const fs = require('fs');
 const path = require('path');
+const HistorySubscription = require('../Models/HistorySubscription');
 const filePath = path.join(__dirname, '..', 'EmailTemplate', 'index.html');
 const filePathTwo = path.join(__dirname, '..', 'EmailTemplate', 'SendInfosAdminProf.html');
 const filePathThree = path.join(__dirname, '..', 'EmailTemplate', 'SendVerificationCode.html');
@@ -150,6 +151,7 @@ const register = async (req, res) => {
             username,
             isEmailVerified: false,
             role: 'client',
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
         });
         await newClient.save();
 
@@ -261,7 +263,7 @@ const registerClient = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
 
             role: 'client',
@@ -344,7 +346,7 @@ const registerAdmin = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
             role: 'admin',
 
@@ -431,7 +433,7 @@ const registerProf = async (req, res) => {
             password: hashedPassword,
             username,
             dateOfBirth: dateOfBirth ? dateOfBirth : "",
-            profilePicture: profilePicture ? profilePicture : "",
+            profilePicture: "https://storage.googleapis.com/elkindy.appspot.com/profile-picture-avatar-icon-vector-260nw-1760295569.jpg?GoogleAccessId=firebase-adminsdk-vw7kn%40elkindy.iam.gserviceaccount.com&Expires=16447014000&Signature=oIY%2F2HdCDuQ7cfuU4dxllQLXtfgBb3omrsDLFP9%2BxXZngComw9UlF0IpP5BpZjn9d5sBTwX9Crw%2F%2BXUicNkHJeGLu64e57sO7zR2DS77pGDnFb6858yQO663rq1ehoNxZmaamY5ZR69Rf%2FQ1XnaBMIZIMRF14fCHQm4mJG3oFeby7bnTlrkWwR1AbF9RPthvZ7aJq5ZjUQFY5uJPwzC7dsyC7wcEzTPkDuZAns8aqXfDWYuYMdrMpzQ4dyc%2BD%2FKSoJFUEbInuraCEI%2F7qqwPntq8wTa88rNPvMsT5xw7L9OEOGIuKBLtXg8s6fmDx7MkYIvIPi1BSB2qHLvzBh%2Fuqw%3D%3D",
             isEmailVerified: true,
             role: 'prof',
 
@@ -477,12 +479,12 @@ const registerProf = async (req, res) => {
 const loginWithEmail = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password);
+
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
         const user = await User.findOne({ email });
-        console.log(user);
+
         if (!user) {
             return res.status(401).json({ message: 'Invalid email' });
         }
@@ -644,7 +646,7 @@ const editClient = async (req, res) => {
         const userId = req.params.id;
         const { name, lastname, email, username, password, dateOfBirth, profilePicture, role,
             parentPhoneNumber, parentCinNumber, instrument, otherInstruments,
-            fatherOccupation, motherOccupation, isSubscribed, level
+            fatherOccupation, motherOccupation, isSubscribed, level, classroom
         } = req.body;
 
         const user = await User.findById(userId);
@@ -695,6 +697,9 @@ const editClient = async (req, res) => {
         }
         if (level) {
             user.level = level;
+        }
+        if (classroom) {
+            user.classroom = classroom;
         }
         if (isSubscribed) {
             user.isSubscribed = isSubscribed;
@@ -798,6 +803,427 @@ const resetPassword = async (req, res) => {
 }
 
 
+const updateSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subscription } = req.body;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.subscriptionType = subscription;
+        user.subscriptionDate = new Date();
+        user.isSubscribed = true;
+        await user.save();
+
+        return res.json({ message: 'User subscription updated successfully' });
+    } catch (error) {
+        console.error('Error updating user subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const cancelSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.instrument = '';
+        user.otherInstruments = '';
+        user.level = 'Initiation';
+        user.parentCinNumber = 0;
+        user.parentPhoneNumber = 0;
+        user.fatherOccupation = '';
+        user.motherOccupation = '';
+        user.subscriptionType = 'Non';
+        user.subscriptionDate = new Date();
+        user.isSubscribed = false;
+        await user.save();
+    } catch (error) {
+        console.error('Error canceling user subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const addSubscriptionHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { subscriptionType, subscriptionPrice } = req.body;
+
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Calculate subscription end date based on subscription type and starting from subscription date
+        let subscriptionEndDate = new Date();
+        switch (subscriptionType) {
+            case 'monthly':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                break;
+            case 'yearly':
+                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+                break;
+            case '6 months':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 6);
+                break;
+            default:
+                console.error('Unexpected subscriptionType:', subscriptionType);
+                return res.status(400).json({ error: 'Invalid subscription type' });
+        }
+        const newHistorySubscription = new HistorySubscription({
+            client: id,
+            subscriptionType: subscriptionType,
+            subscriptionDate: new Date(),
+            subscriptionPrice: subscriptionPrice,
+            subscriptionStatus: 'active',
+            subscriptionEndDate: subscriptionEndDate
+        });
+        await newHistorySubscription.save();
+
+        return res.json({ message: 'User subscription history added successfully' });
+    } catch (error) {
+        console.error('Error adding history subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const cancelSubscriptionHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Calculate subscription end date based on subscription type and starting from subscription date
+        let subscriptionEndDate = new Date();
+        switch (user.subscriptionType) {
+            case 'monthly':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                break;
+            case 'yearly':
+                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+                break;
+            case '6 months':
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 6);
+                break;
+            default:
+                console.error('Unexpected subscriptionType:', user.subscriptionType);
+                return res.status(400).json({ error: 'Invalid subscription type' });
+        }
+        let subscriptionPrice = 0;
+        if (user.subscriptionType === 'monthly') {
+            subscriptionPrice = 50;
+        } else if (user.subscriptionType === 'yearly') {
+            subscriptionPrice = 600;
+        } else if (user.subscriptionType === '6 months') {
+            subscriptionPrice = 300;
+        } else {
+            console.error('Unexpected subscriptionType:', user.subscriptionType);
+            return;
+        }
+        const newHistorySubscription = new HistorySubscription({
+            client: id,
+            subscriptionType: user.subscriptionType,
+            subscriptionDate: new Date(),
+            subscriptionPrice: subscriptionPrice,
+            subscriptionStatus: 'inactive',
+            subscriptionEndDate: subscriptionEndDate
+        });
+        await newHistorySubscription.save();
+
+        return res.json({ message: 'User subscription history added successfully' });
+    } catch (error) {
+        console.error('Error adding history subscription:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const findAllHistorySubscriptions = async (req, res) => {
+    try {
+        const historySubscriptions = await HistorySubscription.find();
+        return res.json(historySubscriptions);
+    } catch (error) {
+        console.error('Error fetching history subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+const findAllHistorySubscriptionByClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const historySubscriptions = await HistorySubscription.find({ client: id });
+        return res.json(historySubscriptions);
+    } catch (error) {
+        console.error('Error fetching history subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+
+const calculateTotalIncome = async (req, res) => {
+    try {
+        const totalIncomeResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalIncome: { $sum: "$subscriptionPrice" }
+                }
+            }
+        ]);
+
+        const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].totalIncome : 0;
+        return res.json({ TotalIncome: totalIncome });
+    } catch (error) {
+        console.error('Error calculating total income:', error);
+        throw error;
+    }
+};
+
+const calculateTotalIncomeThisMonth = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // Month is zero-based, so add 1 to get the correct month
+
+        const totalIncomeResult = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, month] },
+                            { $eq: [{ $year: "$subscriptionDate" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalIncome: { $sum: "$subscriptionPrice" }
+                }
+            }
+        ]);
+
+        const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].totalIncome : 0;
+        return res.json({ TotalIncomeThisMonth: totalIncome });
+    } catch (error) {
+        console.error('Error calculating total income:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateTotalSubscriptionsThisMonth = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        // Get the total subscriptions for the current month
+        const totalSubscriptionsCurrentMonth = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, month] },
+                            { $eq: [{ $year: "$subscriptionDate" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalSubscriptions: { $sum: 1 }
+                }
+            }
+        ]);
+        const totalCurrentMonth = totalSubscriptionsCurrentMonth.length > 0 ? totalSubscriptionsCurrentMonth[0].totalSubscriptions : 0;
+        // Get the total subscriptions for the previous month
+        const previousMonth = month === 1 ? 12 : month - 1;
+        const previousYear = month === 1 ? year - 1 : year;
+        const totalSubscriptionsPreviousMonth = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$subscriptionDate" }, previousMonth] },
+                            { $eq: [{ $year: "$subscriptionDate" }, previousYear] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalSubscriptions: { $sum: 1 }
+                }
+            }
+        ]);
+        const totalPreviousMonth = totalSubscriptionsPreviousMonth.length > 0 ? totalSubscriptionsPreviousMonth[0].totalSubscriptions : 0;
+        // Calculate the percentage increase
+        const percentageIncrease = totalPreviousMonth !== 0 ? ((totalCurrentMonth - totalPreviousMonth) / totalPreviousMonth) * 100 : 0;
+
+        return res.json({ totalSubscriptions: totalCurrentMonth, percentageIncrease });
+    } catch (error) {
+        console.error('Error calculating total subscriptions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+
+const calculateTotalClients = async (req, res) => {
+    try {
+        const totalClientsResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$client",
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalClients: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const totalClients = totalClientsResult.length > 0 ? totalClientsResult[0].totalClients : 0;
+
+        return res.json({ TotalClients: totalClients });
+    } catch (error) {
+        console.error('Error calculating total clients:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateTopClients = async (req, res) => {
+    try {
+        const topClientsResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$client",
+                    totalSubscriptions: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { totalSubscriptions: -1 }
+            },
+            {
+                $limit: 5
+            }
+        ]);
+
+        return res.json({ TopClients: topClientsResult });
+    } catch (error) {
+        console.error('Error calculating top clients:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+const calculateSubscriptionStatus = async (req, res) => {
+    try {
+        const subscriptionStatusResult = await HistorySubscription.aggregate([
+            {
+                $group: {
+                    _id: "$subscriptionStatus",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Initialize subscriptionStatus with default values
+        let subscriptionStatus = { active: 0, inactive: 0 };
+
+        // Iterate through the result and update subscriptionStatus accordingly
+        subscriptionStatusResult.forEach((status) => {
+            if (status._id === 'active') {
+                subscriptionStatus.active = status.count;
+            } else if (status._id === 'inactive') {
+                subscriptionStatus.inactive = status.count;
+            }
+        });
+
+        // Check if either active or inactive status is null and set count to 0 if null
+        if (subscriptionStatus.active === null) {
+            subscriptionStatus.active = 0;
+        }
+        if (subscriptionStatus.inactive === null) {
+            subscriptionStatus.inactive = 0;
+        }
+
+        // Return the subscriptionStatus object in the response
+        return res.json({ SubscriptionStatus: subscriptionStatus });
+    } catch (error) {
+        console.error('Error calculating subscription status:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const calculateSubscriptionByType = async (req, res) => {
+    try {
+        // Create an array containing all months (1 to 12)
+        const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+
+        const subscriptionByTypeResult = await HistorySubscription.aggregate([
+            {
+                $match: {
+                    createdAt: { $exists: true, $ne: null } // Ensure createdAt field exists and is not null
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$createdAt" }, // Extract the month from the createdAt field
+                        subscriptionType: "$subscriptionType"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id.month", // Group by month
+                    types: {
+                        $push: {
+                            type: "$_id.subscriptionType",
+                            count: "$count"
+                        }
+                    }
+                }
+            }
+        ]);
+
+        // Create a map to store the subscription counts for each month
+        const subscriptionByMonth = new Map();
+
+        // Initialize counts for all months to 0
+        allMonths.forEach(month => subscriptionByMonth.set(month, {}));
+
+        // Populate the map with the actual counts
+        subscriptionByTypeResult.forEach(result => {
+            const month = result._id;
+            const counts = {};
+            result.types.forEach(type => counts[type.type] = type.count);
+            subscriptionByMonth.set(month, counts);
+        });
+
+        // Convert the map to a plain object
+        const subscriptionByMonthObject = {};
+        subscriptionByMonth.forEach((value, key) => {
+            subscriptionByMonthObject[key] = value;
+        });
+
+        return res.json({ subscriptionByMonth: subscriptionByMonthObject });
+    } catch (error) {
+        console.error('Error calculating subscription by type:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 
 module.exports = {
     registerClient, registerAdmin, registerProf, register,
@@ -809,6 +1235,12 @@ module.exports = {
     editAdminProf, editClient,
     getUserById,
     resetPassword, forgotPasswordToken, updatePassword,
-    sendVerificationCode, hashVerificationCode, compareVerificationCode
+    sendVerificationCode, hashVerificationCode, compareVerificationCode,
 
+    updateSubscription, cancelSubscription, addSubscriptionHistory, cancelSubscriptionHistory,
+    findAllHistorySubscriptions, findAllHistorySubscriptionByClient,
+
+    calculateTotalIncome, calculateTotalIncomeThisMonth,
+    calculateTotalSubscriptionsThisMonth, calculateTotalClients, calculateTopClients,
+    calculateSubscriptionStatus, calculateSubscriptionByType
 }

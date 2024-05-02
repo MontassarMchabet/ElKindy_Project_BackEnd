@@ -8,6 +8,43 @@ const quizz = require('./Routes/QuizR');
 const planningRouter = require('./Routes/planningRoutes');
 const CourseRouter = require('./Routes/CourseRoutes');
 const RoomRouter = require('./Routes/RoomRoutes');
+const { Server, Socket } = require('socket.io');
+const http = require("http");
+
+
+
+const server = http.createServer(app);
+// Initialize Socket.io
+const io = new Server(server, {
+    cors: {
+        origin: ["http://localhost:3000", "http://localhost:3001"],
+    },
+});
+
+// Handle socket connections
+io.on("connection", (socket) => {
+    console.log("A user connected");
+
+    socket.on("sendNotification", async ({ senderName, receiverName,   }) => {
+        try {
+            
+            io.emit("getNotification", {
+                senderName,
+                orderStatus,
+            });
+            console.log(senderName+"  sendername log backend");
+            console.log(receiver+ " receivername log backend");
+        } catch (error) {
+            console.error('Error sending notification:', error);
+        }
+    });
+
+    socket.on("disconnect", () => {
+        console.log("A user disconnected");
+    });
+});
+
+
 
 const classroomRoutes = require('./Routes/classroomRoutes');
 var cors = require('cors')
@@ -26,7 +63,7 @@ const connectdb = require('./Config/db');
 const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
-var cors = require('cors')
+var cors = require('cors');
 var app = express()
 
 
@@ -67,4 +104,9 @@ app.use('/api/image', UploadImage);
 connectdb();
 app.listen(process.env.port, function () {
     console.log("Started application on port %d", process.env.port)
+});
+
+const PORT = 8089; // Port number
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

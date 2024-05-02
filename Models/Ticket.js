@@ -21,6 +21,10 @@ const ticketSchema = new mongoose.Schema({
   date: {
       type: Date,
       // default: Date.now 
+  },
+  paidAt:{
+    type: Date,
+    default: Date.now(),
   }
 });
 
