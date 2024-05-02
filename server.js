@@ -27,7 +27,6 @@ io.on("connection", (socket) => {
 
     socket.on("sendNotification", async ({ senderName, receiverName,   }) => {
         try {
-            //const receiver = await getUser(receiverName);
             
             io.emit("getNotification", {
                 senderName,
