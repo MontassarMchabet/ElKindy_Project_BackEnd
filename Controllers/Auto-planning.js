@@ -35,10 +35,10 @@ const createAutomaticPlannings = async (req, res) => {
         }
 
         const createdPlannings = [];
-        console.log('students'+students)
+        
 
         const uniqueClassroomList = [...new Set(students.map(student => student.classroom.toString()))];
-        console.log('uniqueClassroomList'+uniqueClassroomList)
+        
         let studentIndex = 0;
         let classroomIndex = 0;
 
@@ -62,7 +62,7 @@ const createAutomaticPlannings = async (req, res) => {
                     axios.get(`http://localhost:9090/api/plannings/TotalIndividualStudy/${students[studentIndex]._id}/${date}/instrument`),
                 ]);
                 const isStudentWithinLimit = totalHours.data.TotalIndividualStudy; // Vérifier si l'étudiant est dans la limite
-                    console.log(isStudentWithinLimit);
+                   
                 if (roomAvailable.data.isRoomAvailable && teacherAvailable.data.isTeacherAvailable && correctDuration.data.correctDuration && isStudentWithinLimit) {
                     const student = students[studentIndex];
                     
@@ -81,7 +81,7 @@ const createAutomaticPlannings = async (req, res) => {
                     studentIndex++; // Passe au prochain étudiant
                     currentStartTime = currentEndTime; // Déplacer le temps de départ
                 } else {
-                    console.log(students[studentIndex]._id)
+                   
                     studentIndex++;
 
                    /*  //currentStartTime = incrementTime(currentStartTime, 30); // Avancer de 30 minutes */

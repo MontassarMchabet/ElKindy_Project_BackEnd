@@ -258,17 +258,17 @@ const updatePlanning2 = async (req, res) => {
 };
 
 
-  const getPlanningWithStudentIds = async (req, res) => {
+const getPlanningWithStudentIds = async (req, res) => {
     try {
-      const { studentId } = req.params;
-      const plannings = await Planning.find({ studentIds: studentId });
-      res.status(200).json(plannings);
-    } catch (error) {
-      console.error('Error getting plannings by student ID:', error);
-      res.status(500).json({ message: 'An error occurred while getting plannings.' });
-    }
-  };
+        // Recherchez les plannings avec le champ studentIds
+        const planningsWithStudentIds = await Planning.find({ studentIds: { $exists: true } });
 
+        res.status(200).json(planningsWithStudentIds);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des plannings :", error);
+        res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des plannings." });
+    }
+};
 
 const getPlanningWithTeacherId = async (req, res) => {
     try {

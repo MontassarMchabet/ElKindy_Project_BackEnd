@@ -16,7 +16,7 @@ router.get('/availability/studends/:studentIds/:date/:startTime/:endTime', plann
 router.get('/CheckDuration/:startTime/:endTime/:type', validatePlanning.CheckDurationOfCourse);
 router.get('/TotalIndividualStudy/:userId/:date/:type', validatePlanning.calculateTotalIndividualStudy);
 router.get('/TotalStudyHours/:classroomId/:date/:startTime/:endTime', validatePlanning.calculateTotalStudyHours);
-router.get('/getallStudent/:studentId', planningController.getPlanningWithStudentIds);
+router.get('/getallStudent', planningController.getPlanningWithStudentIds);
 router.get('/getByTeacherId/:teacherId', planningController.getPlanningWithTeacherId);
 
 router.post('/autoplanning/:startOfWeek/:endOfWeek/:startTime/:endTime', AutoPlanning.createAutomaticPlannings);
