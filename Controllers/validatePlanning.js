@@ -94,7 +94,6 @@ const calculateTotalIndividualStudyHoursPerWeek = async (userId, date) => {
             totalStudyHours += diffInMinutes;
         }
 
-        console.log(totalStudyHours);
         return totalStudyHours;
        
     } catch (error) {
