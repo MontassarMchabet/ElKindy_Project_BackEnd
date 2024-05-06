@@ -1,5 +1,5 @@
 const expressAsyncHandler = require("express-async-handler");
-const Order = require("../models/Order");
+const Order = require("../Models/Order");
 const sendEmail = require('../Controllers/NodeMailer');
 const fs = require('fs');
 const path = require('path');
