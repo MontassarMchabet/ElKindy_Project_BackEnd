@@ -1,7 +1,6 @@
 const Cart = require("../Models/Cart");
 const User = require("../Models/User");
 const expressAsyncHandler = require("express-async-handler");
-const product = require("../Models/product");
 const Cupon = require("../models/Cupon");
 
 

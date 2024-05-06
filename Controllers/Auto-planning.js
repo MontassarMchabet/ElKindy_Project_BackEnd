@@ -1,4 +1,4 @@
-const Planning = require('../Models/Planning');
+
 const Room = require('../Models/Room');
 const User = require('../Models/User');
 const Classroom = require('../Models/Classroom');
@@ -83,8 +83,6 @@ const createAutomaticPlannings = async (req, res) => {
                 } else {
                    
                     studentIndex++;
-
-                   /*  //currentStartTime = incrementTime(currentStartTime, 30); // Avancer de 30 minutes */
                 }
             }
         }
@@ -105,7 +103,6 @@ const createAutomaticPlannings = async (req, res) => {
                 while (classroomIndex < uniqueClassroomList.length && lastEndTime < endTime) {
                     const classroom = await Classroom.findById(uniqueClassroomList[classroomIndex]);
                     
-                    const classroomStudents = await User.find({ classroom: classroom._id });
                     const maxWeeklyHours = getMaxWeeklyHoursForLevel(classroom.level);
                     
                     const classroomPlannings = createdPlannings.filter(planning => planning.classroomId === classroom._id);

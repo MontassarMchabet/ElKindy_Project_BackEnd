@@ -1,6 +1,6 @@
 const Exam = require('../Models/Exam');
 const asyncHandler = require("express-async-handler");
-const axios = require("axios");
+
 const Client = require('../Models/Client');
 const Prof = require('../Models/Prof')
 const fs = require('fs');
@@ -104,22 +104,18 @@ const getExam = asyncHandler(async (req, res) => {
     }
   });
 
-
-
-  /// get exams of a spesific class
   const getExamsByClass = asyncHandler(async (req, res) => {
     const { level } = req.params;
 
     console.log("Received request with level:", level);
 
     try {
-        // Ensure the level is one of the valid options
+        
         if (!['Initiation', 'Préparatoire', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année'].includes(level)) {
             return res.status(400).json({ message: "Invalid level provided" });
         }
 
         const exams = await Exam.find({ level: level });
-      // Log the exams found
 
         res.json(exams);
     } catch (error) {
@@ -128,8 +124,6 @@ const getExam = asyncHandler(async (req, res) => {
     }
 });
 
-  
-  /// get exams for the client
 const getExamsByClientGrade = asyncHandler(async (req, res) => {
   const { level } = req.params;
 
@@ -160,8 +154,6 @@ const getExamsByProfId = asyncHandler(async (req, res) => {
     if (!profe) {
       return res.status(404).json({ message: "Professor not found" });
     }
-
-    // Fetch exams associated with the professor
     const exams = await Exam.find({ prof: profe._id });
 
     res.json(exams);

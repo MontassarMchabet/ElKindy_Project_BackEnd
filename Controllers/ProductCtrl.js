@@ -1,4 +1,4 @@
-const decodeToken = require("../Helpers/DecodeToken");
+
 const Product = require("../Models/product");
 const User = require("../Models/User");
 const asyncHandler = require("express-async-handler");
@@ -35,16 +35,12 @@ const getaAllProduct = asyncHandler(async (req, res) => {
 
     let query = Product.find(JSON.parse(queryStr));
 
-    // Sorting
-
     if (req.query.sort) {
       const sortBy = req.query.sort.split(",").join(" ");
       query = query.sort(sortBy);
     } else {
       query = query.sort("-createdAt");
     }
-
-    // pagination
 
     const page = req.query.page;
     const limit = req.query.limit;
@@ -62,10 +58,6 @@ const getaAllProduct = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
@@ -113,8 +105,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
   }
 });
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
