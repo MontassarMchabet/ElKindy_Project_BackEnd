@@ -1,4 +1,4 @@
-const Coupon = require("../models/Cupon");
+const Coupon = require("../Models/Cupon");
 const asynHandler = require("express-async-handler");
 
 const createCoupon = asynHandler(async (req, res) => {
