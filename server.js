@@ -23,7 +23,7 @@ const io = new Server(server, {
 
 // Handle socket connections
 io.on("connection", (socket) => {
-    console.log("A user connected");
+
 
     socket.on("sendNotification", async ({ senderName, receiverName,   }) => {
         try {
@@ -32,15 +32,14 @@ io.on("connection", (socket) => {
                 senderName,
                 orderStatus,
             });
-            console.log(senderName+"  sendername log backend");
-            console.log(receiver+ " receivername log backend");
+
         } catch (error) {
             console.error('Error sending notification:', error);
         }
     });
 
     socket.on("disconnect", () => {
-        console.log("A user disconnected");
+
     });
 });
 

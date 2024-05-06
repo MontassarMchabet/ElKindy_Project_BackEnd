@@ -1,8 +1,6 @@
 const Exam = require('../Models/Exam');
 const asyncHandler = require("express-async-handler");
-const axios = require("axios");
 const Client = require('../Models/Client');
-const User = require('../Models/User');
 const Answer = require('../Models/Answer');
 
 const createAnswer = asyncHandler(async (req, res) => {

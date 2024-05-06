@@ -1,5 +1,4 @@
 const admin = require("firebase-admin");
-
 const serviceAccount = require("./elkindy-firebase-adminsdk-vw7kn-c31f0147a6.json");
 
 const firebaseConfig = {
