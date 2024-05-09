@@ -500,9 +500,8 @@ const loginWithEmail = async (req, res) => {
 
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
         const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-
-        res.cookie('token', token, { domain: 'el-kindy-project-front-end.vercel.app', path: '/' });
-        res.cookie('refreshToken', refreshToken, { domain: 'el-kindy-project-front-end.vercel.app', path: '/'});
+        res.cookie('token', token, { domain: 'el-kindy-project-front-end.vercel.app', path: '/', httpOnly: true,secure:true });
+        res.cookie('refreshToken', refreshToken, { domain: 'el-kindy-project-front-end.vercel.app', path: '/', httpOnly: true,secure:true });
 
         res.status(200).json({ message: 'Login successful', token, refreshToken });
 
